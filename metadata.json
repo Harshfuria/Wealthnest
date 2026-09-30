@@ -1,0 +1,6 @@
+{
+  "name": "Wealthnest Advisory",
+  "description": "Premier accounting, payroll, tax filing, and virtual CFO practice offering transparent rates and scalable financial management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
