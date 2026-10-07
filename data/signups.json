@@ -1,0 +1,44 @@
+[
+  {
+    "id": "lead-1",
+    "name": "Marcus Vance",
+    "email": "m.vance@vancetech.io",
+    "phone": "+1 (415) 890-2341",
+    "company": "Vance Technologies LLC",
+    "service": "Virtual CFO Advisory",
+    "scopeDetails": "13-week runway modeling, cash flow forecasting, Series A preparation",
+    "estimatedBudget": "$2,800/mo Retainer",
+    "status": "New",
+    "source": "Scope Configurator",
+    "createdAt": "2026-10-06T14:32:00.000Z",
+    "notes": "Requested introductory review call for next Tuesday."
+  },
+  {
+    "id": "lead-2",
+    "name": "Elena Rostova",
+    "email": "elena@rostovacapital.com",
+    "phone": "+1 (201) 555-0198",
+    "company": "Rostova Trading Partners",
+    "service": "Commercial Financing (ABL)",
+    "scopeDetails": "Asset-based line of credit against $1.2M AR ledger",
+    "estimatedBudget": "$1.2M Facility",
+    "status": "Contacted",
+    "source": "Client Portal Registration",
+    "createdAt": "2026-10-05T18:15:00.000Z",
+    "notes": "Sent preliminary borrowing base calculation sheet."
+  },
+  {
+    "id": "lead-3",
+    "name": "David Chen",
+    "email": "david.chen@chenlogistics.com",
+    "phone": "+1 (312) 441-9022",
+    "company": "Chen Freight & Logistics Inc",
+    "service": "Full-Fledged Payroll & Bookkeeping",
+    "scopeDetails": "18 employees bi-weekly direct deposit, multi-state sales tax nexus filings",
+    "estimatedBudget": "$1,450/mo Retainer",
+    "status": "Onboarded",
+    "source": "Contact Form",
+    "createdAt": "2026-10-04T09:40:00.000Z",
+    "notes": "Signed NDA and engagement letter; QuickBooks onboarding scheduled."
+  }
+]

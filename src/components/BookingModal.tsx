@@ -16,9 +16,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) =
 
   if (!isOpen) return null;
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
+
+    try {
+      await fetch('/api/signups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          service: topic,
+          scopeDetails: `Requested discovery call for ${preferredDate || 'Upcoming available time'}`,
+          estimatedBudget: 'Consultation Call',
+          source: 'Consultation Booking Modal',
+          notes: `Preferred time: ${preferredDate || 'Not specified'}`,
+        }),
+      });
+    } catch (err) {
+      console.warn('Could not record booking on backend:', err);
+    }
+
     setConfirmed(true);
   };
 

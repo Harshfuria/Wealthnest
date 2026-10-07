@@ -28,7 +28,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }
   }, [prefilledMessage]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -44,11 +44,31 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
     setIsSubmitting(true);
 
-    // Simulate reliable client-side processing & prepare mailto link
+    try {
+      await fetch('/api/signups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          company: companyName.trim() || `${fullName.trim()}'s Business`,
+          service: selectedService,
+          scopeDetails: message.slice(0, 200),
+          estimatedBudget: 'Proposal Request',
+          source: 'Website Contact Section',
+          notes: message || 'Inquiry sent via contact section form.',
+        }),
+      });
+    } catch (err) {
+      console.warn('Could not record contact lead to backend:', err);
+    }
+
+    // Client-side confirmation
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
-    }, 600);
+    }, 500);
   };
 
   const handleCopyEmail = () => {

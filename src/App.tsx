@@ -3,11 +3,8 @@ import { Sparkles } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ServicesBento } from './components/ServicesBento';
-import { BusinessVisualsShowcase } from './components/BusinessVisualsShowcase';
 import { PricingMatrix } from './components/PricingMatrix';
 import { RateEstimator } from './components/RateEstimator';
-import { MapsGroundingLocator } from './components/MapsGroundingLocator';
-import { VeoVideoStudio } from './components/VeoVideoStudio';
 import { TechStack } from './components/TechStack';
 import { ProofAndCaseStudies } from './components/ProofAndCaseStudies';
 import { ResourcesAndNews } from './components/ResourcesAndNews';
@@ -15,11 +12,13 @@ import { FAQSection } from './components/FAQSection';
 import { ContactSection } from './components/ContactSection';
 import { BookingModal } from './components/BookingModal';
 import { GeminiChatModal } from './components/GeminiChatModal';
+import { ClientPortalModal } from './components/ClientPortalModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { Footer } from './components/Footer';
 
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isClientPortalOpen, setIsClientPortalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatRole, setChatRole] = useState<'general' | 'cfo' | 'tax' | 'capital'>('general');
   const [prefilledMessage, setPrefilledMessage] = useState('');
@@ -30,6 +29,14 @@ export default function App() {
 
   const handleCloseBooking = () => {
     setIsBookingOpen(false);
+  };
+
+  const handleOpenClientPortal = () => {
+    setIsClientPortalOpen(true);
+  };
+
+  const handleCloseClientPortal = () => {
+    setIsClientPortalOpen(false);
   };
 
   const handleOpenChat = (role: 'general' | 'cfo' | 'tax' | 'capital' = 'general') => {
@@ -68,6 +75,7 @@ export default function App() {
       {/* Navigation */}
       <Navbar
         onOpenBooking={handleOpenBooking}
+        onOpenClientPortal={handleOpenClientPortal}
         onNavigateToCalculator={handleNavigateToCalculator}
         onNavigateToResources={handleNavigateToResources}
         onOpenChat={() => handleOpenChat('general')}
@@ -78,6 +86,7 @@ export default function App() {
         {/* Hero Section */}
         <Hero
           onOpenBooking={handleOpenBooking}
+          onOpenClientPortal={handleOpenClientPortal}
           onNavigateToCalculator={handleNavigateToCalculator}
           onNavigateToResources={handleNavigateToResources}
           onOpenChat={() => handleOpenChat('general')}
@@ -87,12 +96,6 @@ export default function App() {
         <ServicesBento
           onSelectServiceForCalculator={handleSelectServiceForCalculator}
           onOpenBooking={handleOpenBooking}
-        />
-
-        {/* Varite-Inspired Interactive Business Graphics & Capital Architecture */}
-        <BusinessVisualsShowcase
-          onOpenBooking={handleOpenBooking}
-          onOpenChat={handleOpenChat}
         />
 
         {/* Engagement Models & Scope Framework */}
@@ -105,12 +108,6 @@ export default function App() {
         <RateEstimator
           onPreFillContact={handlePreFillContact}
         />
-
-        {/* Google Maps Grounded Locator: IRS Centers, Commercial Lenders, SBA & Notaries */}
-        <MapsGroundingLocator />
-
-        {/* Veo 3 AI Video Generation Studio: 16:9 Landscape & 9:16 Portrait Briefings */}
-        <VeoVideoStudio />
 
         {/* Technology Ecosystem Integrations */}
         <TechStack />
@@ -139,6 +136,7 @@ export default function App() {
       {/* Footer */}
       <Footer
         onOpenBooking={handleOpenBooking}
+        onOpenClientPortal={handleOpenClientPortal}
         onNavigateToCalculator={handleNavigateToCalculator}
         onNavigateToResources={handleNavigateToResources}
       />
@@ -177,6 +175,13 @@ export default function App() {
       <BookingModal
         isOpen={isBookingOpen}
         onClose={handleCloseBooking}
+      />
+
+      {/* Client Portal Modal */}
+      <ClientPortalModal
+        isOpen={isClientPortalOpen}
+        onClose={handleCloseClientPortal}
+        onOpenBooking={handleOpenBooking}
       />
     </div>
   );

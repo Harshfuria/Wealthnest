@@ -22,6 +22,7 @@ import { RECENT_NEWS, TAX_DEADLINES } from '../data/resourcesData';
 
 interface HeroProps {
   onOpenBooking: () => void;
+  onOpenClientPortal?: () => void;
   onNavigateToCalculator: () => void;
   onNavigateToResources?: () => void;
   onOpenChat?: () => void;
@@ -29,6 +30,7 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({
   onOpenBooking,
+  onOpenClientPortal,
   onNavigateToCalculator,
   onNavigateToResources,
   onOpenChat,
@@ -48,10 +50,11 @@ export const Hero: React.FC<HeroProps> = ({
     }
   };
 
-  const handleScrollToArchitecture = () => {
-    const el = document.getElementById('business-architecture');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+  const handleExploreAction = () => {
+    if (onOpenClientPortal) {
+      onOpenClientPortal();
+    } else {
+      onNavigateToCalculator();
     }
   };
 
@@ -324,13 +327,13 @@ export const Hero: React.FC<HeroProps> = ({
                     </p>
                   </div>
 
-                  {/* Graphic Hub Action */}
+                  {/* Hub Action */}
                   <div className="flex items-center justify-between pt-1">
                     <button
-                      onClick={handleScrollToArchitecture}
+                      onClick={handleExploreAction}
                       className="text-xs text-[#1E3F35] hover:text-[#152E27] font-bold inline-flex items-center gap-1 transition-colors"
                     >
-                      <span>Explore Interactive Visual Hub</span>
+                      <span>Access Client Portal Vault</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                     <button

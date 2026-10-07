@@ -1,15 +1,17 @@
 import React from 'react';
 import { CONTACT_INFO } from '../data/servicesData';
-import { MessageSquare, Mail, Phone, Shield } from 'lucide-react';
+import { MessageSquare, Mail, Shield, Lock } from 'lucide-react';
 
 interface FooterProps {
   onOpenBooking: () => void;
+  onOpenClientPortal?: () => void;
   onNavigateToCalculator: () => void;
   onNavigateToResources?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   onOpenBooking,
+  onOpenClientPortal,
   onNavigateToCalculator,
   onNavigateToResources,
 }) => {
@@ -26,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({
               Wealthnest Advisory
             </span>
             <p className="text-slate-300/90 max-w-sm leading-relaxed text-xs">
-              Premier accounting, payroll, tax filing, and virtual CFO practice delivering institutional-grade accuracy and transparent unit economics for growing businesses.
+              Premier accounting, payroll, corporate tax filing, and virtual CFO practice delivering institutional-grade accuracy and transparent unit economics for growing businesses.
             </p>
             <div className="pt-2 flex flex-col space-y-2 text-slate-300">
               <a
@@ -56,27 +58,27 @@ export const Footer: React.FC<FooterProps> = ({
             <ul className="space-y-2">
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Bookkeeper Services
+                  Bookkeeper Services ($12/hr)
                 </a>
               </li>
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Sr. Bookkeeper Services
+                  Sr. Bookkeeper Services ($15/hr)
                 </a>
               </li>
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Individual & Corporate Tax Filing
+                  Corporate & Federal Tax Filing
                 </a>
               </li>
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Virtual CFO Practice
+                  Virtual CFO Practice (Fractional)
                 </a>
               </li>
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Full-Fledged Payroll
+                  Full-Fledged Payroll Service
                 </a>
               </li>
               <li>
@@ -91,7 +93,7 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Commercial Financing (ABL, Factoring, Hard Lending)
+                  Commercial Financing (ABL & Factoring)
                 </a>
               </li>
             </ul>
@@ -106,11 +108,6 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <a href="#rates" className="hover:text-white transition-colors">
                   Engagement Models
-                </a>
-              </li>
-              <li>
-                <a href="#business-architecture" className="hover:text-white transition-colors">
-                  Visual Capital Architecture
                 </a>
               </li>
               <li>
@@ -136,17 +133,7 @@ export const Footer: React.FC<FooterProps> = ({
                   }}
                   className="hover:text-white transition-colors"
                 >
-                  Resources & News Hub
-                </a>
-              </li>
-              <li>
-                <a href="#locator" className="hover:text-white transition-colors">
-                  Tax & Financial Center Locator
-                </a>
-              </li>
-              <li>
-                <a href="#video-studio" className="hover:text-white transition-colors">
-                  Veo 3 Video Briefing Studio
+                  Resources & Regulatory News
                 </a>
               </li>
               <li>
@@ -159,6 +146,17 @@ export const Footer: React.FC<FooterProps> = ({
                   Compliance FAQ
                 </a>
               </li>
+              {onOpenClientPortal && (
+                <li>
+                  <button
+                    onClick={onOpenClientPortal}
+                    className="text-emerald-400 hover:text-emerald-300 transition-colors text-left font-semibold inline-flex items-center gap-1.5"
+                  >
+                    <Lock className="w-3 h-3 text-emerald-400" />
+                    <span>Access Client Portal Vault</span>
+                  </button>
+                </li>
+              )}
               <li>
                 <button
                   onClick={onOpenBooking}
@@ -178,10 +176,11 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="space-y-2 text-slate-300/80">
               <div className="flex items-center gap-1.5 text-white">
                 <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Strict Client NDA</span>
+                <span>Strict Client NDA Protected</span>
               </div>
               <p>All financial datasets are encrypted via 256-bit TLS protocols.</p>
               <p>QuickBooks ProAdvisor & Xero Certified Partner practices.</p>
+              <p>IRS Circular 230 ethical representation guidelines strictly maintained.</p>
             </div>
           </div>
 

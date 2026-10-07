@@ -95,7 +95,7 @@ export const FAQSection: React.FC = () => {
             Have a specialized tax question or an active IRS notice?
           </div>
           <div className="text-xs text-slate-600">
-            Reach out directly via WhatsApp at <span className="text-[#1E3F35] font-mono font-bold">+1 (201) 616-2843</span> or email <span className="text-[#1E3F35] font-mono font-bold">harshfuria.1592@gmail.com</span>.
+            Reach out directly via WhatsApp at <span className="text-[#1E3F35] font-mono font-bold">+1 (201) 616-2843</span> or email <span className="text-[#1E3F35] font-mono font-bold">wealthnestadvisoryllc@gmail.com</span>.
           </div>
         </div>
 

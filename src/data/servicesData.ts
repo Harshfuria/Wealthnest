@@ -5,7 +5,7 @@ export const CONTACT_INFO = {
   phone: '2016162843',
   phoneDisplay: '+1 (201) 616-2843',
   whatsappUrl: 'https://wa.me/12016162843',
-  email: 'harshfuria.1592@gmail.com',
+  email: 'wealthnestadvisoryllc@gmail.com',
   hours: 'Mon – Fri: 8:00 AM – 7:00 PM EST | Sat: 9:00 AM – 3:00 PM EST',
   location: 'Serving Clients Nationwide (US & Global)',
 };
@@ -265,7 +265,7 @@ export const FAQS: FAQItem[] = [
   {
     category: 'process',
     question: 'How quickly can I reach Wealthnest Advisory via WhatsApp or Email?',
-    answer: 'You can message us directly on WhatsApp at 2016162843 (+1 201-616-2843) for rapid responses, or email harshfuria.1592@gmail.com. We typically respond to incoming WhatsApp inquiries within 15–30 minutes during business hours.'
+    answer: 'You can message us directly on WhatsApp at 2016162843 (+1 201-616-2843) for rapid responses, or email wealthnestadvisoryllc@gmail.com. We typically respond to incoming WhatsApp inquiries within 15–30 minutes during business hours.'
   },
   {
     category: 'security',
