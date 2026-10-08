@@ -1,20 +1,31 @@
 import React from 'react';
 import { CONTACT_INFO } from '../data/servicesData';
-import { MessageSquare, Mail, Shield, Lock } from 'lucide-react';
+import { MessageSquare, Mail, Shield, Lock, Download, Image as ImageIcon, Phone } from 'lucide-react';
+import { WealthnestLogo } from './WealthnestLogo';
 
 interface FooterProps {
   onOpenBooking: () => void;
   onOpenClientPortal?: () => void;
-  onNavigateToCalculator: () => void;
-  onNavigateToResources?: () => void;
+  onNavigateToSection?: (sectionId: string) => void;
+  onOpenBrandKit?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   onOpenBooking,
   onOpenClientPortal,
-  onNavigateToCalculator,
-  onNavigateToResources,
+  onNavigateToSection,
+  onOpenBrandKit,
 }) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    if (onNavigateToSection) {
+      onNavigateToSection(id);
+    } else {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="bg-[#0F1F1A] text-slate-300 text-xs border-t border-[#1E3F35]/50 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,13 +35,18 @@ export const Footer: React.FC<FooterProps> = ({
           
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
-            <span className="text-xl font-bold tracking-tight text-white block">
-              Wealthnest Advisory
-            </span>
+            <WealthnestLogo variant="footer" />
             <p className="text-slate-300/90 max-w-sm leading-relaxed text-xs">
-              Premier accounting, payroll, corporate tax filing, and virtual CFO practice delivering institutional-grade accuracy and transparent unit economics for growing businesses.
+              Premier strategic accounting, proactive tax planning, full-cycle bookkeeping, and virtual CFO leadership delivering institutional-grade accuracy for businesses and individuals nationwide.
             </p>
             <div className="pt-2 flex flex-col space-y-2 text-slate-300">
+              <a
+                href={`tel:${CONTACT_INFO.phone}`}
+                className="inline-flex items-center gap-2 hover:text-white transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Office: {CONTACT_INFO.phoneDisplay}</span>
+              </a>
               <a
                 href={CONTACT_INFO.whatsappUrl}
                 target="_blank"
@@ -38,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({
                 className="inline-flex items-center gap-2 hover:text-white transition-colors"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                <span>WhatsApp: {CONTACT_INFO.phoneDisplay} (Direct: {CONTACT_INFO.phone})</span>
+                <span>WhatsApp: {CONTACT_INFO.phoneDisplay}</span>
               </a>
               <a
                 href={`mailto:${CONTACT_INFO.email}`}
@@ -48,101 +64,113 @@ export const Footer: React.FC<FooterProps> = ({
                 <span>Email: {CONTACT_INFO.email}</span>
               </a>
             </div>
+
+            {/* Quick Logo Download & Brand Kit Action */}
+            <div className="pt-3 flex flex-wrap items-center gap-2">
+              <a
+                href="/wealthnest-logo.jpg"
+                download="wealthnest-advisory-logo.jpg"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-900/50 hover:bg-emerald-800/60 text-emerald-200 border border-emerald-700/40 text-[11px] font-semibold transition-all cursor-pointer"
+                title="Download High-Res 1200x1200px JPEG Logo"
+              >
+                <Download className="w-3 h-3 text-amber-300" />
+                <span>Download Official Logo (.JPG)</span>
+              </a>
+              {onOpenBrandKit && (
+                <button
+                  type="button"
+                  onClick={onOpenBrandKit}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-[11px] font-medium transition-all cursor-pointer"
+                >
+                  <ImageIcon className="w-3 h-3 text-amber-300" />
+                  <span>Brand Kit & Assets</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Quick Links Column */}
+          {/* Practice Areas Column */}
           <div className="space-y-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-white block">
-              Practice Areas
+              Core Practice Areas
             </span>
             <ul className="space-y-2">
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Bookkeeper Services ($12/hr)
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  Tax Preparation & Strategy
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Sr. Bookkeeper Services ($15/hr)
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  Accounting & Monthly Closes
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Corporate & Federal Tax Filing
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  Virtual CFO Advisory
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Virtual CFO Practice (Fractional)
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  Full-Service Payroll
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Full-Fledged Payroll Service
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  US Business Formation
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Sales Tax & Nexus Compliance
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  IRS & State Representation
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  AR Collections & Debt Recovery
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  Multi-State Sales Tax Nexus
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Commercial Financing (ABL & Factoring)
+                <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className="hover:text-white transition-colors">
+                  Commercial Financing Advisory
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Navigation Mirrors */}
+          {/* Quick Navigation Links */}
           <div className="space-y-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-white block">
-              Navigation
+              Firm Overview
             </span>
             <ul className="space-y-2">
               <li>
-                <a href="#rates" className="hover:text-white transition-colors">
-                  Engagement Models
+                <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="hover:text-white transition-colors">
+                  About Our Practice
                 </a>
               </li>
               <li>
-                <a
-                  href="#calculator"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onNavigateToCalculator();
-                  }}
-                  className="hover:text-white transition-colors"
-                >
-                  Scope Configurator
+                <a href="#industries" onClick={(e) => handleNavClick(e, 'industries')} className="hover:text-white transition-colors">
+                  Industries We Specialize In
                 </a>
               </li>
               <li>
-                <a
-                  href="#resources"
-                  onClick={(e) => {
-                    if (onNavigateToResources) {
-                      e.preventDefault();
-                      onNavigateToResources();
-                    }
-                  }}
-                  className="hover:text-white transition-colors"
-                >
-                  Resources & Regulatory News
+                <a href="#why-us" onClick={(e) => handleNavClick(e, 'why-us')} className="hover:text-white transition-colors">
+                  Why Choose Wealthnest
                 </a>
               </li>
               <li>
-                <a href="#case-studies" className="hover:text-white transition-colors">
+                <a href="#news" onClick={(e) => handleNavClick(e, 'news')} className="hover:text-white transition-colors">
+                  Tax Calendar & Bulletins
+                </a>
+              </li>
+              <li>
+                <a href="#case-studies" onClick={(e) => handleNavClick(e, 'case-studies')} className="hover:text-white transition-colors">
                   Client Case Studies
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition-colors">
+                <a href="#faq" onClick={(e) => handleNavClick(e, 'faq')} className="hover:text-white transition-colors">
                   Compliance FAQ
                 </a>
               </li>
@@ -150,9 +178,9 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={onOpenClientPortal}
-                    className="text-emerald-400 hover:text-emerald-300 transition-colors text-left font-semibold inline-flex items-center gap-1.5"
+                    className="text-amber-300 hover:text-amber-200 transition-colors text-left font-semibold inline-flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Lock className="w-3 h-3 text-emerald-400" />
+                    <Lock className="w-3 h-3 text-amber-300" />
                     <span>Access Client Portal Vault</span>
                   </button>
                 </li>
@@ -160,15 +188,15 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={onOpenBooking}
-                  className="text-emerald-400 hover:text-emerald-300 transition-colors text-left font-medium"
+                  className="text-emerald-400 hover:text-emerald-300 transition-colors text-left font-medium cursor-pointer"
                 >
-                  Book Discovery Call
+                  Schedule Free Discovery Call
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Security & Regulatory Notes */}
+          {/* Compliance & Representation Standards */}
           <div className="space-y-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-white block">
               Standards & Security
@@ -178,26 +206,34 @@ export const Footer: React.FC<FooterProps> = ({
                 <Shield className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Strict Client NDA Protected</span>
               </div>
-              <p>All financial datasets are encrypted via 256-bit TLS protocols.</p>
+              <p>All client datasets encrypted via 256-bit AES protocols in our secure vault.</p>
               <p>QuickBooks ProAdvisor & Xero Certified Partner practices.</p>
               <p>IRS Circular 230 ethical representation guidelines strictly maintained.</p>
+              <p className="text-slate-400 text-[11px] pt-1">
+                Serving businesses in all 50 US states and international entities.
+              </p>
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
-          <div>
-            © {new Date().getFullYear()} Wealthnest Advisory. All rights reserved.
+        {/* Bottom Bar & Circular 230 Notice */}
+        <div className="pt-8 space-y-4 text-[11px] text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              © {new Date().getFullYear()} Wealthnest Advisory LLC. All rights reserved.
+            </div>
+            <div className="flex items-center gap-4">
+              <span>Privacy Policy</span>
+              <span aria-hidden="true">·</span>
+              <span>Terms of Engagement</span>
+              <span aria-hidden="true">·</span>
+              <span>Circular 230 Disclosure</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span>Privacy Policy</span>
-            <span aria-hidden="true">·</span>
-            <span>Terms of Engagement</span>
-            <span aria-hidden="true">·</span>
-            <span>IRS Circular 230 Notice</span>
-          </div>
+          <p className="text-[10px] text-slate-500 leading-normal border-t border-emerald-950/40 pt-3">
+            IRS Circular 230 Notice: To ensure compliance with requirements imposed by the IRS, any U.S. federal tax advice contained on this website is not intended or written to be used, and cannot be used, for the purpose of (i) avoiding penalties under the Internal Revenue Code or (ii) promoting, marketing, or recommending to another party any transaction or matter addressed herein.
+          </p>
         </div>
 
       </div>

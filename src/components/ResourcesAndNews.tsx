@@ -28,19 +28,19 @@ export const ResourcesAndNews: React.FC<ResourcesAndNewsProps> = ({
   };
 
   return (
-    <section id="resources" className="py-20 md:py-28 bg-white border-t border-slate-200">
+    <section id="news" className="py-20 md:py-28 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="max-w-3xl mb-12 space-y-3">
-          <div className="text-xs font-semibold text-[#1E3F35] tracking-wider uppercase">
-            05. Resource Center & Regulatory Newsroom
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 [text-wrap:balance]">
-            Timely Tax Advisories, Regulatory Updates & Practical Guides
+          <span className="text-xs font-bold text-[#1E3F35] tracking-wider uppercase block">
+            Tax Calendar & Regulatory Bulletins
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-serif">
+            Timely Tax Deadlines, Regulatory Alerts & Advisory Guides
           </h2>
-          <p className="text-base text-slate-600">
-            Stay ahead of IRS policy shifts, FinCEN transparency rules, multi-state nexus rulings, and executive cash management strategies curated by our senior advisors.
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Stay ahead of IRS filing deadlines, FinCEN beneficial ownership transparency rules, multi-state sales tax thresholds, and executive cash management guidelines curated by our partners.
           </p>
         </div>
 

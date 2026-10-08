@@ -1,0 +1,83 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+  <defs>
+    <linearGradient id="lightBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F4F8F6" />
+    </linearGradient>
+
+    <linearGradient id="goldLightL" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4AF37" />
+      <stop offset="50%" stop-color="#C59B27" />
+      <stop offset="100%" stop-color="#936F15" />
+    </linearGradient>
+
+    <linearGradient id="emeraldDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3F35" />
+      <stop offset="100%" stop-color="#0E231D" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="1200" fill="url(#lightBg)" />
+  <rect x="44" y="44" width="1112" height="1112" rx="20" fill="none" stroke="#1E3F35" stroke-width="2" stroke-opacity="0.25" />
+  <rect x="58" y="58" width="1084" height="1084" rx="14" fill="none" stroke="#D4AF37" stroke-width="1" stroke-opacity="0.4" />
+
+  <g transform="translate(600, 430)">
+    <circle r="225" fill="none" stroke="#1E3F35" stroke-width="1" stroke-opacity="0.2" stroke-dasharray="6,6" />
+    
+    <!-- Nest Arches -->
+    <path d="M -190,-10 C -160,150 0,225 0,225 C 0,225 160,150 190,-10 C 140,40 40,145 0,145 C -40,145 -140,40 -190,-10 Z" 
+          fill="#1E3F35" />
+    <path d="M -150,-40 C -120,70 0,140 0,140 C 0,140 120,70 150,-40 C 105,10 30,85 0,85 C -30,85 -105,10 -150,-40 Z" 
+          fill="#D4AF37" />
+    <path d="M -110,-70 C -80,20 0,75 0,75 C 0,70 80,20 110,-70 C 70,-20 20,35 0,35 C -20,35 -70,-20 -110,-70 Z" 
+          fill="#0F241E" />
+
+    <!-- Core Diamond / Arrow -->
+    <path d="M 0,-185 L -50,-35 L 0,-65 Z" fill="#D4AF37" />
+    <path d="M 0,-185 L 50,-35 L 0,-65 Z" fill="#936F15" />
+    <path d="M 0,-65 L -50,-35 L 0,25 Z" fill="#1E3F35" />
+    <path d="M 0,-65 L 50,-35 L 0,25 Z" fill="#2C594C" />
+    <polygon points="0,-48 10,-32 30,-32 15,-17 21,5 0,-6 -21,5 -15,-17 -30,-32 -10,-32" fill="#D4AF37" />
+  </g>
+
+  <g text-anchor="middle">
+    <text x="600" y="780" 
+          font-family="'Playfair Display', 'Cinzel', 'Georgia', serif" 
+          font-size="64" 
+          font-weight="700" 
+          letter-spacing="10" 
+          fill="#0F241E">
+      WEALTHNEST
+    </text>
+    <text x="600" y="840" 
+          font-family="'Inter', 'Montserrat', 'Arial', sans-serif" 
+          font-size="25" 
+          font-weight="600" 
+          letter-spacing="16" 
+          fill="#B58B1B">
+      ADVISORY LLC
+    </text>
+    <g transform="translate(600, 878)">
+      <line x1="-240" y1="0" x2="-30" y2="0" stroke="#1E3F35" stroke-width="1.8" stroke-opacity="0.5" />
+      <polygon points="0,-7 7,0 0,7 -7,0" fill="#D4AF37" />
+      <line x1="30" y1="0" x2="240" y2="0" stroke="#1E3F35" stroke-width="1.8" stroke-opacity="0.5" />
+    </g>
+    <text x="600" y="922" 
+          font-family="'Inter', 'Montserrat', 'Arial', sans-serif" 
+          font-size="14" 
+          font-weight="600" 
+          letter-spacing="7" 
+          fill="#1E3F35">
+      VIRTUAL CFO  •  CORPORATE TAX  •  ACCOUNTING
+    </text>
+    <text x="600" y="964" 
+          font-family="'Georgia', serif" 
+          font-style="italic" 
+          font-size="15" 
+          letter-spacing="2"
+          fill="#526E65">
+      Safeguarding Assets. Structuring Growth.
+    </text>
+  </g>
+</svg>

@@ -20,7 +20,7 @@ export const TechStack: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {TECH_STACK.map((tech) => (
+          {TECH_STACK.map((tech: { name: string; category: string; description: string }) => (
             <div
               key={tech.name}
               className="p-5 rounded-xl bg-[#F8FAF9] border border-slate-200 hover:border-[#1E3F35]/50 hover:shadow-sm transition-all group"

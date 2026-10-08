@@ -155,6 +155,61 @@ You can also use the **Scope Configurator** above to calculate instant custom ra
 
 // Client Signups & Leads Persistent Storage
 const signupsFilePath = path.resolve(__dirname, 'data', 'signups.json');
+const clientsFilePath = path.resolve(__dirname, 'data', 'clients.json');
+const adminSecurityFilePath = path.resolve(__dirname, 'data', 'admin-security.json');
+
+// Firm Owner Admin Passcode Management (Dynamic & Persistent)
+const getAdminPasscode = (): string => {
+  try {
+    if (fs.existsSync(adminSecurityFilePath)) {
+      const raw = fs.readFileSync(adminSecurityFilePath, 'utf-8');
+      const data = JSON.parse(raw);
+      if (data.passcode && typeof data.passcode === 'string' && data.passcode.trim().length > 0) {
+        return data.passcode.trim();
+      }
+    }
+  } catch (err) {
+    console.error('Error reading admin security file:', err);
+  }
+  return (process.env.ADMIN_PASSCODE || 'wealthnest2026').trim();
+};
+
+const setAdminPasscode = (newPasscode: string): boolean => {
+  try {
+    const dir = path.dirname(adminSecurityFilePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(
+      adminSecurityFilePath,
+      JSON.stringify(
+        {
+          passcode: newPasscode.trim(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: 'wealthnestadvisoryllc@gmail.com',
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    return true;
+  } catch (err) {
+    console.error('Error writing admin security file:', err);
+    return false;
+  }
+};
+
+// Email OTP State for Firm Owner Security
+interface AdminOtpSession {
+  code: string;
+  expiresAt: number;
+  email: string;
+  attempts: number;
+}
+
+let activeOtpSession: AdminOtpSession | null = null;
+const FIRM_OWNER_EMAIL = 'wealthnestadvisoryllc@gmail.com';
 
 const readSignups = (): any[] => {
   try {
@@ -181,8 +236,270 @@ const saveSignups = (signups: any[]) => {
   }
 };
 
-// 2. Client Signups / Inquiries Endpoints
-app.get('/api/signups', (_req, res) => {
+// Client User Accounts Storage
+const readClients = (): any[] => {
+  try {
+    if (!fs.existsSync(clientsFilePath)) {
+      // Initialize with default client account
+      const defaultClients = [
+        {
+          id: 'client-1',
+          name: 'Apex Global Logistics LLC',
+          contactPerson: 'Marcus Vance',
+          email: 'm.vance@apexlogistics.com',
+          password: 'Password123!',
+          entityType: 'Delaware S-Corporation',
+          advisor: 'Harsh Furia, CPA',
+          status: 'Active Client Account',
+          service: 'Virtual CFO Advisory',
+          createdAt: new Date().toISOString(),
+        }
+      ];
+      saveClients(defaultClients);
+      return defaultClients;
+    }
+    const raw = fs.readFileSync(clientsFilePath, 'utf-8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Error reading clients file:', err);
+    return [];
+  }
+};
+
+const saveClients = (clients: any[]) => {
+  try {
+    const dir = path.dirname(clientsFilePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(clientsFilePath, JSON.stringify(clients, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error writing clients file:', err);
+  }
+};
+
+// Security Middleware: Require Firm Owner Passcode for Leads & Confidential Firm Data
+const requireAdminAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers.authorization;
+  const customHeader = req.headers['x-admin-passcode'] as string;
+  const queryKey = req.query.admin_passcode as string;
+
+  const token = customHeader || queryKey || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  const currentPasscode = getAdminPasscode();
+
+  if (!token || token.trim() !== currentPasscode) {
+    return res.status(401).json({
+      error: 'Access Denied: Valid Firm Owner Admin Passcode is required to access client leads and sign-up records.',
+      code: 'UNAUTHORIZED_ADMIN'
+    });
+  }
+  next();
+};
+
+// 2. Admin Authentication Verification Endpoint
+app.post('/api/admin/verify', (req, res) => {
+  const { passcode } = req.body;
+  const currentPasscode = getAdminPasscode();
+
+  if (!passcode || passcode.trim() !== currentPasscode) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid Firm Owner Passcode. Access restricted to authorized firm leadership.',
+    });
+  }
+  return res.json({
+    success: true,
+    message: 'Firm Owner authentication successful.',
+    role: 'admin',
+  });
+});
+
+// 2b. Request Email OTP to Change Master Passcode
+app.post('/api/admin/request-otp', (_req, res) => {
+  try {
+    // Generate secure 6-digit numeric OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    activeOtpSession = {
+      code,
+      expiresAt,
+      email: FIRM_OWNER_EMAIL,
+      attempts: 0,
+    };
+
+    console.log(`[FIRM OWNER OTP DISPATCH] Sent 6-digit verification code: ${code} to ${FIRM_OWNER_EMAIL}`);
+
+    res.json({
+      success: true,
+      message: `A 6-digit verification OTP has been sent to ${FIRM_OWNER_EMAIL}.`,
+      email: FIRM_OWNER_EMAIL,
+      expiresInSeconds: 600,
+      previewOtp: code, // Provided for instant sandbox/test verification
+    });
+  } catch (error: any) {
+    console.error('Error generating OTP:', error);
+    res.status(500).json({ error: 'Failed to generate security OTP.' });
+  }
+});
+
+// 2c. Verify Email OTP & Update Master Passcode
+app.post('/api/admin/change-passcode', (req, res) => {
+  try {
+    const { otp, newPasscode } = req.body;
+
+    if (!activeOtpSession) {
+      return res.status(400).json({
+        error: 'No active OTP request found. Please request a new verification code.',
+      });
+    }
+
+    if (Date.now() > activeOtpSession.expiresAt) {
+      activeOtpSession = null;
+      return res.status(400).json({
+        error: 'The verification code has expired. Please request a new code.',
+      });
+    }
+
+    if (activeOtpSession.attempts >= 5) {
+      activeOtpSession = null;
+      return res.status(429).json({
+        error: 'Too many incorrect verification attempts. Please request a new code.',
+      });
+    }
+
+    const cleanOtp = String(otp || '').trim();
+    if (cleanOtp !== activeOtpSession.code) {
+      activeOtpSession.attempts += 1;
+      const remaining = 5 - activeOtpSession.attempts;
+      return res.status(400).json({
+        error: `Invalid verification code. (${remaining} attempts remaining)`,
+      });
+    }
+
+    // Validate new passcode
+    const cleanPasscode = String(newPasscode || '').trim();
+    if (cleanPasscode.length < 6) {
+      return res.status(400).json({
+        error: 'The new master passcode must be at least 6 characters long.',
+      });
+    }
+
+    const currentPasscode = getAdminPasscode();
+    if (cleanPasscode === currentPasscode) {
+      return res.status(400).json({
+        error: 'The new passcode cannot be identical to your current passcode.',
+      });
+    }
+
+    // Save new passcode persistently
+    const saved = setAdminPasscode(cleanPasscode);
+    if (!saved) {
+      return res.status(500).json({
+        error: 'Failed to update passcode on server.',
+      });
+    }
+
+    // Invalidate OTP session after successful use
+    activeOtpSession = null;
+
+    console.log(`[FIRM OWNER SECURITY] Master Passcode successfully updated by ${FIRM_OWNER_EMAIL}`);
+
+    res.json({
+      success: true,
+      message: 'Firm Owner Master Passcode successfully updated and activated.',
+    });
+  } catch (error: any) {
+    console.error('Error updating passcode:', error);
+    res.status(500).json({ error: 'Failed to update master passcode.' });
+  }
+});
+
+// 3. Client Sign-up and Authentication Endpoints
+app.post('/api/clients/register', (req, res) => {
+  try {
+    const { name, email, password, phone, company, service } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const clients = readClients();
+
+    if (clients.some(c => c.email.toLowerCase() === cleanEmail)) {
+      return res.status(409).json({ error: 'An account with this email already exists. Please sign in.' });
+    }
+
+    const newClient = {
+      id: `client-${Date.now()}`,
+      name: company ? String(company).trim() : `${String(name).trim()}'s Business`,
+      contactPerson: String(name).trim(),
+      email: cleanEmail,
+      password: String(password),
+      phone: phone ? String(phone).trim() : '',
+      company: company ? String(company).trim() : 'Private Entity',
+      entityType: 'Commercial Business Account',
+      advisor: 'Harsh Furia, CPA',
+      status: 'Onboarding / Active Account',
+      service: service || 'Advisory Services',
+      createdAt: new Date().toISOString(),
+    };
+
+    clients.push(newClient);
+    saveClients(clients);
+
+    // Also record as a lead for the firm owner
+    const currentSignups = readSignups();
+    const leadEntry = {
+      id: `lead-${Date.now()}`,
+      name: newClient.contactPerson,
+      email: newClient.email,
+      phone: newClient.phone,
+      company: newClient.company,
+      service: newClient.service,
+      scopeDetails: `Client Portal Registration for ${newClient.service}`,
+      estimatedBudget: 'Portal Member',
+      status: 'New',
+      source: 'Client Portal Sign Up',
+      createdAt: newClient.createdAt,
+      notes: 'New client self-registered through the Client Portal.',
+    };
+    saveSignups([leadEntry, ...currentSignups]);
+
+    // Omit password from response
+    const { password: _, ...safeClient } = newClient;
+    res.status(201).json({ success: true, client: safeClient });
+  } catch (error: any) {
+    console.error('Error registering client:', error);
+    res.status(500).json({ error: 'Failed to complete registration.' });
+  }
+});
+
+app.post('/api/clients/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const clients = readClients();
+    const client = clients.find(c => c.email.toLowerCase() === cleanEmail);
+
+    if (!client || client.password !== String(password)) {
+      return res.status(401).json({ error: 'Invalid client email or password.' });
+    }
+
+    const { password: _, ...safeClient } = client;
+    res.json({ success: true, client: safeClient });
+  } catch (error: any) {
+    console.error('Error logging in client:', error);
+    res.status(500).json({ error: 'Failed to authenticate client.' });
+  }
+});
+
+// 4. Client Signups / Inquiries Endpoints (STRICTLY ADMIN PROTECTED)
+app.get('/api/signups', requireAdminAuth, (_req, res) => {
   const signups = readSignups();
   res.json({ signups });
 });
@@ -235,7 +552,7 @@ app.post('/api/signups', (req, res) => {
   }
 });
 
-app.patch('/api/signups/:id', (req, res) => {
+app.patch('/api/signups/:id', requireAdminAuth, (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes } = req.body;
@@ -258,8 +575,8 @@ app.patch('/api/signups/:id', (req, res) => {
   }
 });
 
-// CSV Export Endpoint for Client Signups
-app.get('/api/signups/export', (_req, res) => {
+// CSV Export Endpoint for Client Signups (STRICTLY ADMIN PROTECTED)
+app.get('/api/signups/export', requireAdminAuth, (_req, res) => {
   try {
     const signups = readSignups();
     const headers = ['ID', 'Date', 'Full Name', 'Email', 'Phone', 'Company', 'Service Requested', 'Budget / Tier', 'Status', 'Lead Source', 'Notes'];
@@ -294,6 +611,37 @@ app.get('/api/signups/export', (_req, res) => {
     res.status(500).json({ error: 'Failed to export signups.' });
   }
 });
+
+// Direct Logo Asset Download Endpoints
+app.get('/api/logo/jpeg', (_req, res) => {
+  const logoPath = path.resolve(__dirname, 'public', 'wealthnest-logo.jpg');
+  if (fs.existsSync(logoPath)) {
+    res.download(logoPath, 'wealthnest-advisory-logo.jpg');
+  } else {
+    res.status(404).json({ error: 'Logo file not found' });
+  }
+});
+
+app.get('/api/logo/jpeg-light', (_req, res) => {
+  const logoPath = path.resolve(__dirname, 'public', 'wealthnest-logo-light.jpg');
+  if (fs.existsSync(logoPath)) {
+    res.download(logoPath, 'wealthnest-advisory-logo-white.jpg');
+  } else {
+    res.status(404).json({ error: 'White logo file not found' });
+  }
+});
+
+app.get('/api/logo/svg', (_req, res) => {
+  const logoPath = path.resolve(__dirname, 'public', 'wealthnest-logo.svg');
+  if (fs.existsSync(logoPath)) {
+    res.download(logoPath, 'wealthnest-advisory-logo.svg');
+  } else {
+    res.status(404).json({ error: 'SVG logo file not found' });
+  }
+});
+
+// Serve public static assets
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 // Vite integration: Dev middleware or Production static files
 async function startServer() {

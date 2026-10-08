@@ -1,5 +1,19 @@
 [
   {
+    "id": "lead-1791484196755",
+    "name": "Test Advisor",
+    "email": "test@example.com",
+    "phone": "2016162843",
+    "company": "Test Corp",
+    "service": "Tax Preparation & Planning",
+    "scopeDetails": "",
+    "estimatedBudget": "To Be Quoted",
+    "status": "New",
+    "source": "Direct Form",
+    "createdAt": "2026-10-08T18:29:56.755Z",
+    "notes": ""
+  },
+  {
     "id": "lead-1",
     "name": "Marcus Vance",
     "email": "m.vance@vancetech.io",

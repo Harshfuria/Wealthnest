@@ -5,14 +5,21 @@ import { CONTACT_INFO } from '../data/servicesData';
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTopic?: string;
 }
 
-export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
+export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, initialTopic }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
-  const [topic, setTopic] = useState('Accounting & Bookkeeping');
+  const [topic, setTopic] = useState(initialTopic || 'Tax Preparation & Planning');
   const [confirmed, setConfirmed] = useState(false);
+
+  React.useEffect(() => {
+    if (initialTopic) {
+      setTopic(initialTopic);
+    }
+  }, [initialTopic]);
 
   if (!isOpen) return null;
 
@@ -125,13 +132,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) =
                     onChange={(e) => setTopic(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#1E3F35]"
                   >
-                    <option value="Accounting & Bookkeeping">Bookkeeping (Hourly / Retainer)</option>
-                    <option value="Tax Filing & Deductions">Tax Filing (Individual & Business)</option>
-                    <option value="Virtual CFO Advisory">Virtual CFO Advisory (Fractional)</option>
-                    <option value="Payroll & Compliance">Payroll Service (Direct Deposit & Filings)</option>
-                    <option value="Sales Tax & Nexus">Sales Tax & Nexus Compliance</option>
-                    <option value="AR Collections & Recovery">AR Collections & Bad Debt Recovery</option>
-                    <option value="Commercial Financing">Commercial Financing (ABL, Invoice Factoring, Hard Money)</option>
+                    <option value="Tax Preparation & Planning">Corporate & Personal Tax Preparation</option>
+                    <option value="Accounting & Monthly Closes">Accounting & Monthly Bookkeeping Closes</option>
+                    <option value="Virtual CFO Advisory">Virtual CFO Advisory (13-Week Cash Flow & Runway)</option>
+                    <option value="Full-Service Payroll Management">Full-Service Payroll Management & Compliance</option>
+                    <option value="US Business Formation">US Business Formation & S-Corp Structuring</option>
+                    <option value="IRS & State Tax Audit Representation">IRS & State Tax Representation (Audit Defense)</option>
+                    <option value="Multi-State Sales Tax & Nexus">Multi-State Sales Tax & Economic Nexus</option>
+                    <option value="Commercial Financing Advisory">Commercial Financing (ABL, Factoring, Capital)</option>
+                    <option value="Cross-Border & Visa Holder Tax Strategy">Cross-Border & Visa Holder Tax (H-1B, L-1, NRI)</option>
+                    <option value="Crypto & Digital Economy Tax">Crypto & Digital Economy Tax Consulting</option>
+                    <option value="Comprehensive Multi-Service Engagement">Comprehensive Multi-Service Engagement</option>
                   </select>
                 </div>
 

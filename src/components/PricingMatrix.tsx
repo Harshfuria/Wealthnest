@@ -119,7 +119,7 @@ export const PricingMatrix: React.FC<PricingMatrixProps> = ({
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-[#1E3F35] shrink-0 mt-0.5" />
-                  <span>Year-end CPA audit package & schedule creation</span>
+                  <span>Year-end audit-ready financials & schedule package</span>
                 </li>
               </ul>
             </div>

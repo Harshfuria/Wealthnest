@@ -1,419 +1,401 @@
 import React, { useState } from 'react';
 import { 
   ArrowRight, 
-  MessageSquare, 
+  Phone, 
   Shield, 
   CheckCircle2, 
-  Newspaper, 
-  Calendar, 
-  BookOpen, 
-  AlertTriangle, 
+  Lock, 
+  FileText, 
+  Clock,
   Sparkles,
-  Cpu,
-  Layers,
-  Coins,
-  TrendingUp,
-  Zap,
-  Scale,
-  Activity
+  Send,
+  Users,
+  Award
 } from 'lucide-react';
-import { CONTACT_INFO } from '../data/servicesData';
-import { RECENT_NEWS, TAX_DEADLINES } from '../data/resourcesData';
+import { CONTACT_INFO, ADVISORY_STATS } from '../data/servicesData';
 
 interface HeroProps {
   onOpenBooking: () => void;
-  onOpenClientPortal?: () => void;
-  onNavigateToCalculator: () => void;
-  onNavigateToResources?: () => void;
-  onOpenChat?: () => void;
+  onOpenClientPortal: () => void;
+  onNavigateToServices: () => void;
+  onNavigateToContact: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
   onOpenBooking,
   onOpenClientPortal,
-  onNavigateToCalculator,
-  onNavigateToResources,
-  onOpenChat,
+  onNavigateToServices,
+  onNavigateToContact,
 }) => {
-  const [heroMode, setHeroMode] = useState<'graphic' | 'dispatch'>('graphic');
-  const [activeHeroNode, setActiveHeroNode] = useState<'abl' | 'factoring' | 'hardmoney' | 'recovery'>('abl');
+  // DPCPA-style interactive quick lead step form
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [service, setService] = useState('Tax Preparation & Planning');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const latestNews = RECENT_NEWS[0];
-  const upcomingDeadline = TAX_DEADLINES[4]; // e.g. September 15
-
-  const handleScrollToResources = () => {
-    if (onNavigateToResources) {
-      onNavigateToResources();
-    } else {
-      const el = document.getElementById('resources');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+  const handleStepSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 1) {
+      if (!name.trim() || !phone.trim()) return;
+      setStep(2);
+      return;
     }
-  };
 
-  const handleExploreAction = () => {
-    if (onOpenClientPortal) {
-      onOpenClientPortal();
-    } else {
-      onNavigateToCalculator();
+    if (step === 2) {
+      setIsSubmitting(true);
+      try {
+        await fetch('/api/signups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            phone,
+            email: email || 'pending-phone-contact@wealthnest.local',
+            service,
+            company: 'New Consultation Inquiry',
+          }),
+        });
+      } catch (err) {
+        console.warn('Inquiry saved locally:', err);
+      }
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setStep(3);
     }
   };
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 border-b border-slate-200 bg-[#F8FAF9]">
-      {/* Background radial atmosphere - subtle money saver wash */}
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#F5F8F6] via-[#FAFBF9] to-white pt-10 pb-16 md:pt-16 md:pb-24 border-b border-slate-200">
+      {/* Soft atmospheric gradient accents */}
       <div 
-        className="absolute top-0 right-1/4 -z-10 w-[500px] h-[500px] bg-emerald-100/40 rounded-full blur-3xl pointer-events-none"
+        className="absolute top-0 right-1/4 -z-10 w-[600px] h-[600px] bg-emerald-100/40 rounded-full blur-3xl pointer-events-none"
         aria-hidden="true"
       />
       <div 
-        className="absolute bottom-0 left-10 -z-10 w-[400px] h-[400px] bg-slate-100/60 rounded-full blur-3xl pointer-events-none"
+        className="absolute bottom-0 left-10 -z-10 w-[400px] h-[400px] bg-amber-50/50 rounded-full blur-2xl pointer-events-none"
         aria-hidden="true"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
           
-          {/* Left Column: Core Value Proposition */}
+          {/* Left Column: Welcoming Accounting & Advisory Introduction */}
           <div className="lg:col-span-7 space-y-6">
             
-            {/* Regulatory Alert Kicker */}
-            <div 
-              onClick={handleScrollToResources}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 cursor-pointer hover:bg-emerald-100 transition-colors"
-            >
-              <Newspaper className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Latest Advisory: FinCEN Beneficial Ownership Compliance</span>
-              <span className="text-emerald-700 font-bold">→</span>
+            {/* Friendly Authority Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/90 border border-emerald-200 text-xs font-semibold text-[#16382E]">
+              <Shield className="w-3.5 h-3.5 text-[#1E3F35]" />
+              <span>Jersey City, NJ • Nationwide Accounting, Tax & Advisory Practice</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-[1.1] [text-wrap:balance]">
-              Scalable Financial Clarity with Flexible, Scope-Based Advisory
+            {/* Warm, Professional Headline (Just like dpcpallc.com) */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 leading-[1.18] font-serif [text-wrap:balance]">
+              Professional Accounting, Bookkeeping & Tax Services for Businesses & Individuals
             </h1>
 
-            <p className="text-lg text-slate-600 max-w-2xl leading-relaxed font-normal">
-              Wealthnest Advisory provides rigorous corporate accounting, customized tax compliance, fractional CFO leadership, AR debt collections, and commercial financing solutions (ABL, invoice factoring, hard lending).
+            {/* Reassuring Sub-headline */}
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed font-normal">
+              From corporate tax planning and spotless monthly bookkeeping to fractional CFO leadership, US company incorporation, and cross-border financial strategy — we deliver personal, proactive financial guidance with zero hidden fees.
             </p>
 
-            {/* Direct engagement anchors - unboxed, scannable descriptors */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 pb-1 text-left">
-              <div className="border-l-2 border-[#1E3F35] pl-3 py-1">
-                <span className="block text-xs text-slate-500 font-medium">Accounting & CFO</span>
-                <span className="text-xs sm:text-sm font-bold text-slate-900">Full Practice</span>
-              </div>
-              <div className="border-l-2 border-[#1E3F35] pl-3 py-1">
-                <span className="block text-xs text-slate-500 font-medium">Tax & Sales Tax</span>
-                <span className="text-xs sm:text-sm font-bold text-slate-900">Custom Entity</span>
-              </div>
-              <div className="border-l-2 border-[#1E3F35] pl-3 py-1">
-                <span className="block text-xs text-slate-500 font-medium">AR Collections</span>
-                <span className="text-xs sm:text-sm font-bold text-slate-900">Debt Recovery</span>
-              </div>
-              <div className="border-l-2 border-[#1E3F35] pl-3 py-1">
-                <span className="block text-xs text-slate-500 font-medium">Commercial Financing</span>
-                <span className="text-xs sm:text-sm font-bold text-slate-900">ABL · Factoring</span>
-              </div>
+            {/* Trust Markers Bar (EXCLUDING CPA) */}
+            <div className="pt-1 flex flex-wrap items-center gap-y-2 gap-x-5 text-xs text-slate-700 border-y border-slate-200/90 py-3">
+              <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#1E3F35]" />
+                <span>10+ Years Advisory Experience</span>
+              </span>
+              <span className="hidden sm:inline text-slate-300">·</span>
+              <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#1E3F35]" />
+                <span>Serving All 50 States Nationwide</span>
+              </span>
+              <span className="hidden sm:inline text-slate-300">·</span>
+              <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#1E3F35]" />
+                <span>IRS Circular 230 Standards</span>
+              </span>
+              <span className="hidden sm:inline text-slate-300">·</span>
+              <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#1E3F35]" />
+                <span>QuickBooks & Xero Certified</span>
+              </span>
             </div>
 
-            {/* CTAs */}
-            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Primary Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <button
-                onClick={onNavigateToCalculator}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] active:scale-98 transition-all shadow-sm whitespace-nowrap"
+                onClick={onOpenBooking}
+                className="px-6 py-3.5 text-sm font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] active:scale-98 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Build Your Custom Scope</span>
-                <ArrowRight className="w-4 h-4 text-white" />
+                <Phone className="w-4 h-4 text-amber-300" />
+                <span>Schedule a Free Consultation</span>
               </button>
 
-              {onOpenChat && (
-                <button
-                  type="button"
-                  onClick={onOpenChat}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 text-sm font-semibold text-[#1E3F35] bg-[#EBF4EE] border border-[#C2DFCF] rounded-lg hover:bg-[#DCEEE3] transition-all whitespace-nowrap"
-                >
-                  <Sparkles className="w-4 h-4 text-[#1E3F35]" />
-                  <span>Launch Gemini AI Advisor</span>
-                </button>
-              )}
-
-              <a
-                href={`${CONTACT_INFO.whatsappUrl}?text=${encodeURIComponent('Hello Wealthnest Advisory, I would like to discuss financial advisory and bookkeeping services for my business.')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all whitespace-nowrap shadow-sm"
+              <button
+                onClick={onNavigateToServices}
+                className="px-6 py-3.5 text-sm font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
-                <MessageSquare className="w-4 h-4 text-emerald-700" />
-                <span>WhatsApp</span>
-              </a>
+                <span>View All Services</span>
+                <ArrowRight className="w-4 h-4 text-slate-500" />
+              </button>
+
+              <button
+                onClick={onOpenClientPortal}
+                className="px-4 py-3.5 text-sm font-semibold text-[#1E3F35] hover:text-[#152E27] hover:bg-emerald-50 rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-900/20"
+                title="Access Secure Client Portal"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#1E3F35]" />
+                <span>Client Portal</span>
+              </button>
             </div>
 
-            {/* Institutional Trust markers */}
-            <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500">
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-[#1E3F35]" />
-                <span>Bank-Grade 256-Bit Encryption</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" />
-                <span>Strict Client NDA Protected</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" />
-                <span>QuickBooks & Xero Certified</span>
-              </div>
+            {/* Quick Contact & WhatsApp Assist */}
+            <div className="pt-1 flex flex-wrap items-center gap-4 text-xs text-slate-600">
+              <span>Need immediate assistance?</span>
+              <a
+                href={CONTACT_INFO.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#1E3F35] font-bold hover:underline flex items-center gap-1"
+              >
+                <span>Chat on WhatsApp</span>
+                <span>→</span>
+              </a>
+              <span className="text-slate-300">|</span>
+              <a
+                href={`tel:${CONTACT_INFO.phone}`}
+                className="text-slate-800 font-semibold hover:text-[#1E3F35]"
+              >
+                Call: {CONTACT_INFO.phoneDisplay}
+              </a>
             </div>
 
           </div>
 
-          {/* Right column: Varite-Inspired Interactive Capital Graphic & Advisory Dispatch */}
+          {/* Right Column: DPCPA-Style Interactive 3-Step Quick Consultation Box */}
           <div className="lg:col-span-5">
-            <div className="rounded-2xl bg-white border border-slate-200 p-5 sm:p-7 shadow-sm relative overflow-hidden space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden">
               
-              {/* Card Header: Mode Switcher */}
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-200">
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200">
-                  <button
-                    onClick={() => setHeroMode('graphic')}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                      heroMode === 'graphic'
-                        ? 'bg-[#1E3F35] text-white shadow-sm font-bold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <Cpu className="w-3.5 h-3.5" />
-                    <span>Capital Visual Radar</span>
-                  </button>
-                  <button
-                    onClick={() => setHeroMode('dispatch')}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                      heroMode === 'dispatch'
-                        ? 'bg-[#1E3F35] text-white shadow-sm font-bold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <Newspaper className="w-3.5 h-3.5" />
-                    <span>Advisory Dispatch</span>
-                  </button>
+              {/* Header: Friendly Discount & Free Assessment Banner */}
+              <div className="bg-[#0C231C] px-6 py-4 border-b border-emerald-950 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span className="text-xs font-bold tracking-wide uppercase text-amber-300">
+                      Free 30-Min Discovery Call
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-200 bg-emerald-900/80 px-2 py-0.5 rounded border border-emerald-700/50">
+                    10% Off 2025 Filing
+                  </span>
                 </div>
-
-                <span className="text-[10px] font-mono text-emerald-800 font-medium hidden sm:inline-block">
-                  Live Engine 2026
-                </span>
+                <h3 className="text-base font-bold font-serif text-white mt-1">
+                  Start Your Tax & Advisory Review
+                </h3>
+                <p className="text-[11px] text-emerald-200/90 mt-0.5">
+                  Complete in 30 seconds. Our senior advisory team will contact you within 24–48 hours.
+                </p>
               </div>
 
-              {/* MODE 1: VARITE-STYLE CATCHY BUSINESS GRAPHIC - SUBTLE MONEY SAVER PALETTE */}
-              {heroMode === 'graphic' && (
-                <div className="space-y-4">
-                  {/* SVG Isometric Financial Network Graphic */}
-                  <div className="relative rounded-xl bg-[#F6F9F7] p-3 border border-slate-200 overflow-hidden">
-                    <svg
-                      viewBox="0 0 400 210"
-                      className="w-full h-auto"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <defs>
-                        <linearGradient id="heroGradientSubtle" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#4E876A" />
-                          <stop offset="50%" stopColor="#1E3F35" />
-                          <stop offset="100%" stopColor="#2D6A4F" />
-                        </linearGradient>
-                      </defs>
+              {/* Progress Steps Indicators (Just like DPCPA LLC) */}
+              <div className="px-6 pt-4 pb-1 border-b border-slate-100 bg-[#FAFBF9] flex items-center justify-between text-xs font-medium text-slate-600">
+                <div className={`flex items-center gap-1.5 ${step >= 1 ? 'text-[#1E3F35] font-bold' : ''}`}>
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-[#1E3F35] text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    1
+                  </span>
+                  <span>Contact</span>
+                </div>
+                <span className="text-slate-300">→</span>
+                <div className={`flex items-center gap-1.5 ${step >= 2 ? 'text-[#1E3F35] font-bold' : ''}`}>
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? 'bg-[#1E3F35] text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    2
+                  </span>
+                  <span>Service</span>
+                </div>
+                <span className="text-slate-300">→</span>
+                <div className={`flex items-center gap-1.5 ${step === 3 ? 'text-[#1E3F35] font-bold' : ''}`}>
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 3 ? 'bg-[#1E3F35] text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    3
+                  </span>
+                  <span>Confirm</span>
+                </div>
+              </div>
 
-                      {/* Connection Conduits */}
-                      <path d="M 70 105 L 180 65" stroke="#CBD5E1" strokeWidth="2" />
-                      <path d="M 70 105 L 180 65" stroke="url(#heroGradientSubtle)" strokeWidth="2.5" strokeDasharray="5 5">
-                        <animate attributeName="stroke-dashoffset" values="20;0" dur="1.2s" repeatCount="indefinite" />
-                      </path>
+              {/* Step Forms */}
+              <div className="p-6">
+                {!isSubmitted ? (
+                  <form onSubmit={handleStepSubmit} className="space-y-4">
+                    {step === 1 && (
+                      <div className="space-y-3.5">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-800 mb-1">
+                            Your Full Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g. John Doe or Business Name"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                          />
+                        </div>
 
-                      <path d="M 70 105 L 180 145" stroke="#CBD5E1" strokeWidth="2" />
-                      <path d="M 70 105 L 180 145" stroke="url(#heroGradientSubtle)" strokeWidth="2.5" strokeDasharray="5 5">
-                        <animate attributeName="stroke-dashoffset" values="20;0" dur="1.2s" repeatCount="indefinite" />
-                      </path>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-800 mb-1">
+                            Mobile / WhatsApp Phone <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="+1 (201) 555-0199"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                          />
+                        </div>
 
-                      <path d="M 180 65 L 310 105" stroke="#CBD5E1" strokeWidth="2" />
-                      <path d="M 180 65 L 310 105" stroke="url(#heroGradientSubtle)" strokeWidth="2.5" strokeDasharray="5 5">
-                        <animate attributeName="stroke-dashoffset" values="20;0" dur="1.2s" repeatCount="indefinite" />
-                      </path>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-800 mb-1">
+                            Email Address <span className="text-slate-400 font-normal">(Optional for faster quote)</span>
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="john@example.com"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                          />
+                        </div>
 
-                      <path d="M 180 145 L 310 105" stroke="#CBD5E1" strokeWidth="2" />
-                      <path d="M 180 145 L 310 105" stroke="url(#heroGradientSubtle)" strokeWidth="2.5" strokeDasharray="5 5">
-                        <animate attributeName="stroke-dashoffset" values="20;0" dur="1.2s" repeatCount="indefinite" />
-                      </path>
-
-                      {/* NODE 1: Hard Money (Left) */}
-                      <g onClick={() => setActiveHeroNode('hardmoney')} className="cursor-pointer">
-                        <circle cx="70" cy="105" r="30" fill={activeHeroNode === 'hardmoney' ? '#1E3F35' : '#FFFFFF'} stroke={activeHeroNode === 'hardmoney' ? '#152E27' : '#94A3B8'} strokeWidth="2" />
-                        <circle cx="70" cy="105" r="12" fill={activeHeroNode === 'hardmoney' ? '#2D6A4F' : '#E2E8F0'} fillOpacity="0.6" />
-                        <text x="70" y="102" textAnchor="middle" fill={activeHeroNode === 'hardmoney' ? '#FFFFFF' : '#0F172A'} fontSize="9" fontWeight="bold">Hard</text>
-                        <text x="70" y="113" textAnchor="middle" fill={activeHeroNode === 'hardmoney' ? '#A7F3D0' : '#475569'} fontSize="8" fontWeight="bold">Money</text>
-                      </g>
-
-                      {/* NODE 2: ABL Revolver (Top Middle) */}
-                      <g onClick={() => setActiveHeroNode('abl')} className="cursor-pointer">
-                        <circle cx="180" cy="65" r="34" fill={activeHeroNode === 'abl' ? '#1E3F35' : '#FFFFFF'} stroke={activeHeroNode === 'abl' ? '#152E27' : '#94A3B8'} strokeWidth="2.5" />
-                        <circle cx="180" cy="65" r="14" fill={activeHeroNode === 'abl' ? '#2D6A4F' : '#E2E8F0'} fillOpacity="0.6" />
-                        <text x="180" y="62" textAnchor="middle" fill={activeHeroNode === 'abl' ? '#FFFFFF' : '#0F172A'} fontSize="10" fontWeight="bold">ABL Line</text>
-                        <text x="180" y="74" textAnchor="middle" fill={activeHeroNode === 'abl' ? '#A7F3D0' : '#475569'} fontSize="8" fontWeight="bold">75-85% LTV</text>
-                      </g>
-
-                      {/* NODE 3: Invoice Factoring (Bottom Middle) */}
-                      <g onClick={() => setActiveHeroNode('factoring')} className="cursor-pointer">
-                        <circle cx="180" cy="145" r="34" fill={activeHeroNode === 'factoring' ? '#1E3F35' : '#FFFFFF'} stroke={activeHeroNode === 'factoring' ? '#152E27' : '#94A3B8'} strokeWidth="2.5" />
-                        <circle cx="180" cy="145" r="14" fill={activeHeroNode === 'factoring' ? '#2D6A4F' : '#E2E8F0'} fillOpacity="0.6" />
-                        <text x="180" y="142" textAnchor="middle" fill={activeHeroNode === 'factoring' ? '#FFFFFF' : '#0F172A'} fontSize="10" fontWeight="bold">Factoring</text>
-                        <text x="180" y="154" textAnchor="middle" fill={activeHeroNode === 'factoring' ? '#A7F3D0' : '#475569'} fontSize="8" fontWeight="bold">90% in 24h</text>
-                      </g>
-
-                      {/* NODE 4: Cash Treasury (Right) */}
-                      <g onClick={() => setActiveHeroNode('recovery')} className="cursor-pointer">
-                        <circle cx="315" cy="105" r="32" fill={activeHeroNode === 'recovery' ? '#1E3F35' : '#EBF4EE'} stroke="#1E3F35" strokeWidth="2.5" />
-                        <circle cx="315" cy="105" r="16" fill="#1E3F35" fillOpacity="0.15" />
-                        <text x="315" y="102" textAnchor="middle" fill="#1E3F35" fontSize="13" fontWeight="bold">$</text>
-                        <text x="315" y="115" textAnchor="middle" fill={activeHeroNode === 'recovery' ? '#FFFFFF' : '#1E3F35'} fontSize="8" fontWeight="bold">LIQUIDITY</text>
-                      </g>
-
-                      {/* Floating Indicator */}
-                      <rect x="250" y="170" width="135" height="24" rx="12" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1" />
-                      <circle cx="262" cy="182" r="4" fill="#1E3F35" />
-                      <text x="320" y="186" textAnchor="middle" fill="#1E3F35" fontSize="8.5" fontWeight="bold" fontFamily="monospace">
-                        94% Velocity Index
-                      </text>
-                    </svg>
-
-                    {/* Quick Node Selector Pills */}
-                    <div className="flex items-center justify-center gap-1.5 mt-2">
-                      {[
-                        { id: 'hardmoney', label: 'Hard Money' },
-                        { id: 'abl', label: 'ABL Revolver' },
-                        { id: 'factoring', label: 'Invoice Factoring' },
-                        { id: 'recovery', label: 'AR Recovery' },
-                      ].map((node) => (
                         <button
-                          key={node.id}
-                          onClick={() => setActiveHeroNode(node.id as any)}
-                          className={`px-2 py-1 text-[10px] font-mono rounded transition-colors ${
-                            activeHeroNode === node.id
-                              ? 'bg-[#1E3F35] text-white font-bold'
-                              : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
-                          }`}
+                          type="submit"
+                          className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2"
                         >
-                          {node.label}
+                          <span>Continue to Step 2 (Select Service)</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
                         </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Active Node Live Status Box */}
-                  <div className="p-3.5 rounded-xl bg-[#F8FAF9] border border-slate-200 text-xs space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-slate-900 uppercase tracking-wider">
-                        {activeHeroNode === 'hardmoney' && 'Bridge & Hard Money Facility'}
-                        {activeHeroNode === 'abl' && 'Asset-Based Revolving Line (ABL)'}
-                        {activeHeroNode === 'factoring' && 'Spot & Whole Ledger Invoice Factoring'}
-                        {activeHeroNode === 'recovery' && 'Commercial Debt Recovery Engine'}
-                      </span>
-                      <span className="text-[#1E3F35] font-mono font-bold">
-                        {activeHeroNode === 'hardmoney' && '65-75% LTV'}
-                        {activeHeroNode === 'abl' && '$500K-$25M+'}
-                        {activeHeroNode === 'factoring' && '24h Funding'}
-                        {activeHeroNode === 'recovery' && 'Contingency Only'}
-                      </span>
-                    </div>
-                    <p className="text-slate-600 text-[11px] leading-relaxed">
-                      {activeHeroNode === 'hardmoney' && 'Short-term non-bank liquidity secured by commercial real estate and heavy machinery.'}
-                      {activeHeroNode === 'abl' && 'Revolving facility pegged to eligible receivables and inventory with weekly borrowing base compliance.'}
-                      {activeHeroNode === 'factoring' && 'Instant 90% capital advances on verified B2B customer invoices to eliminate cash flow drag.'}
-                      {activeHeroNode === 'recovery' && 'Intelligent 4-stage debt collection with skip-tracing and multi-state legal enforcement.'}
-                    </p>
-                  </div>
-
-                  {/* Hub Action */}
-                  <div className="flex items-center justify-between pt-1">
-                    <button
-                      onClick={handleExploreAction}
-                      className="text-xs text-[#1E3F35] hover:text-[#152E27] font-bold inline-flex items-center gap-1 transition-colors"
-                    >
-                      <span>Access Client Portal Vault</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={onOpenBooking}
-                      className="text-xs font-semibold text-emerald-800 hover:underline"
-                    >
-                      Request Facility Terms →
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* MODE 2: ADVISORY NEWSROOM & DEADLINES */}
-              {heroMode === 'dispatch' && (
-                <div className="space-y-4">
-                  {/* Top Item: Latest Regulatory Alert */}
-                  <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] text-slate-500">
-                      <span className="font-mono text-emerald-800 font-semibold uppercase">
-                        {latestNews.category} Alert
-                      </span>
-                      <span>{latestNews.sourceAuthority}</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-900 leading-snug">
-                      {latestNews.title}
-                    </h3>
-                    <p className="text-xs text-slate-600 line-clamp-2">
-                      {latestNews.summary}
-                    </p>
-                    <div className="pt-1 flex items-center justify-between">
-                      <button
-                        onClick={handleScrollToResources}
-                        className="text-xs text-[#1E3F35] hover:text-[#152E27] font-semibold inline-flex items-center gap-1"
-                      >
-                        <span>Read Advisory Briefing</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                      <span className="text-[11px] text-slate-500">{latestNews.readTime}</span>
-                    </div>
-                  </div>
-
-                  {/* Middle Item: Upcoming Compliance Milestone */}
-                  <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200/80 flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
-                      <Calendar className="w-4 h-4" />
-                    </div>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{upcomingDeadline.date}</span>
-                        <span className="text-[10px] font-mono text-emerald-800 font-semibold">Upcoming Milestone</span>
                       </div>
-                      <div className="text-slate-800 font-medium">{upcomingDeadline.title}</div>
-                      <div className="text-slate-600 text-[11px]">{upcomingDeadline.applicableTo}</div>
+                    )}
+
+                    {step === 2 && (
+                      <div className="space-y-3.5">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-800 mb-1">
+                            What service do you need help with?
+                          </label>
+                          <select
+                            value={service}
+                            onChange={(e) => setService(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35] bg-white"
+                          >
+                            <option value="Tax Preparation & Planning">Tax Preparation & Year-Round Planning</option>
+                            <option value="Monthly Bookkeeping & Accounting">Monthly Bookkeeping & Clean Closes</option>
+                            <option value="Virtual CFO Advisory">Virtual CFO & Cash Flow Strategy</option>
+                            <option value="US Business Formation (LLC / Corp)">US Business Formation & S-Corp Setup</option>
+                            <option value="Cross-Border & Visa Holder Tax (H-1B, L-1, NRI)">Cross-Border & Visa Holder Tax (H-1B, L-1, NRI)</option>
+                            <option value="Payroll & Multi-State Compliance">Full-Service Payroll & Multi-State Filing</option>
+                            <option value="IRS Audit & Notice Representation">IRS Audit & Notice Representation</option>
+                            <option value="Crypto & Digital Nomad Tax">Crypto & Digital Nomad Tax Strategy</option>
+                          </select>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-950 space-y-1">
+                          <div className="font-bold flex items-center gap-1.5 text-[#1E3F35]">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>10% Welcome Discount Applied!</span>
+                          </div>
+                          <p className="text-[11px] text-slate-700 leading-normal">
+                            We will calculate an upfront, transparent fixed estimate for your review with no obligation.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setStep(1)}
+                            className="w-1/3 py-3 px-3 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                          >
+                            Back
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-2/3 py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-70"
+                          >
+                            {isSubmitting ? 'Sending Request...' : 'Submit & Get 10% Off'}
+                            <Send className="w-3.5 h-3.5 text-amber-300" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </form>
+                ) : (
+                  <div className="py-4 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#1E3F35] flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <h4 className="text-base font-bold text-slate-900 font-serif">
+                      Thank You, {name}!
+                    </h4>
+                    <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
+                      Your inquiry and 10% discount have been registered. Our senior advisory team will contact you at <strong>{phone}</strong> within 24–48 hours.
+                    </p>
+                    <div className="pt-2 flex flex-col gap-2">
+                      <a
+                        href={CONTACT_INFO.whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                      >
+                        <span>Need faster response? Message on WhatsApp</span>
+                      </a>
+                      <button
+                        onClick={() => { setIsSubmitted(false); setStep(1); }}
+                        className="text-[11px] text-slate-500 hover:text-slate-800 underline"
+                      >
+                        Submit another inquiry
+                      </button>
                     </div>
                   </div>
+                )}
 
-                  {/* Bottom Quick Hub Action */}
-                  <div className="pt-1 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <button
-                      onClick={handleScrollToResources}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-800 bg-white rounded-lg hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm"
-                    >
-                      <BookOpen className="w-3.5 h-3.5 text-[#1E3F35]" />
-                      <span>Access Resource Hub</span>
-                    </button>
-
-                    <button
-                      onClick={onOpenBooking}
-                      className="text-xs font-semibold text-emerald-800 hover:underline whitespace-nowrap"
-                    >
-                      Schedule Review →
-                    </button>
-                  </div>
+                {/* Trust footer inside card */}
+                <div className="mt-4 pt-3 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100">
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-[#1E3F35]" />
+                    <span>Confidential & Safe</span>
+                  </span>
+                  <span>Zero Spam Guarantee</span>
                 </div>
-              )}
+
+              </div>
 
             </div>
           </div>
 
         </div>
+
+        {/* Bottom Practice Statistics Ribbon */}
+        <div className="mt-12 pt-8 border-t border-slate-200/90 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {ADVISORY_STATS.map((stat, idx) => (
+            <div key={idx} className="space-y-1">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#1E3F35] font-serif">
+                {stat.value}
+              </div>
+              <div className="text-xs font-bold text-slate-800">
+                {stat.label}
+              </div>
+              <div className="text-[11px] text-slate-500">
+                {stat.subtext}
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </section>
   );

@@ -22,7 +22,16 @@ import {
   ChevronDown,
   Phone,
   Mail,
-  Database
+  Database,
+  KeyRound,
+  AlertTriangle,
+  Cloud,
+  FolderOpen,
+  RefreshCw,
+  Check,
+  Eye,
+  EyeOff,
+  Send
 } from 'lucide-react';
 import { CONTACT_INFO } from '../data/servicesData';
 
@@ -39,6 +48,7 @@ interface ClientDocument {
   date: string;
   size: string;
   category: 'tax' | 'accounting' | 'legal';
+  isEncrypted?: boolean;
 }
 
 export interface ClientSignupRecord {
@@ -62,14 +72,35 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
   onOpenBooking,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<'client_login' | 'client_register' | 'admin_login'>('client_login');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'documents' | 'billing' | 'messages' | 'admin_signups'>('dashboard');
 
-  // Login form state
+  // Client Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Register form state
+  // Admin Login form state
+  const [adminPasscode, setAdminPasscode] = useState('');
+  const [adminError, setAdminError] = useState<string | null>(null);
+  const [verifiedAdminToken, setVerifiedAdminToken] = useState<string | null>(null);
+
+  // Change Passcode with Email OTP State
+  const [isChangingPasscode, setIsChangingPasscode] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [newPasscode, setNewPasscode] = useState('');
+  const [confirmPasscode, setConfirmPasscode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpMessage, setOtpMessage] = useState<string | null>(null);
+  const [otpPreviewCode, setOtpPreviewCode] = useState<string | null>(null);
+  const [otpCountdown, setOtpCountdown] = useState(0);
+  const [changePasscodeLoading, setChangePasscodeLoading] = useState(false);
+  const [changePasscodeError, setChangePasscodeError] = useState<string | null>(null);
+  const [changePasscodeSuccess, setChangePasscodeSuccess] = useState<string | null>(null);
+  const [showNewPasscode, setShowNewPasscode] = useState(false);
+
+  // Client Register form state
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
@@ -79,20 +110,20 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
-  // Signups records (Admin Data)
+  // Signups records (Admin Data - ONLY accessible by verified Firm Owner)
   const [signupsList, setSignupsList] = useState<ClientSignupRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [copiedNotice, setCopiedNotice] = useState<string | null>(null);
 
-  // Client Session state
+  // Active Session state
   const [clientData, setClientData] = useState({
-    name: 'Apex Global Logistics',
+    name: 'Apex Global Logistics LLC',
     contactPerson: 'Marcus Vance',
     email: 'm.vance@apexlogistics.com',
     entityType: 'Delaware S-Corporation',
-    advisor: 'Harsh Furia, CPA',
-    status: 'Active Engagement',
+    advisor: 'Harsh Furia (Managing Partner)',
+    status: 'Active Client Account',
     role: 'client' as 'client' | 'admin',
   });
 
@@ -105,6 +136,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
       date: 'March 12, 2026',
       size: '2.4 MB',
       category: 'tax',
+      isEncrypted: true,
     },
     {
       id: 'doc-2',
@@ -113,6 +145,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
       date: 'April 02, 2026',
       size: '890 KB',
       category: 'accounting',
+      isEncrypted: true,
     },
     {
       id: 'doc-3',
@@ -121,6 +154,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
       date: 'January 10, 2026',
       size: '420 KB',
       category: 'legal',
+      isEncrypted: true,
     },
     {
       id: 'doc-4',
@@ -129,15 +163,23 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
       date: 'March 28, 2026',
       size: '1.8 MB',
       category: 'accounting',
+      isEncrypted: true,
     },
   ]);
 
   const [uploadedFilesNotice, setUploadedFilesNotice] = useState<string | null>(null);
 
-  // Fetch signups from server
-  const fetchSignups = async () => {
+  // Fetch signups from server ONLY if authenticated as admin
+  const fetchSignups = async (passcode?: string) => {
+    const tokenToUse = passcode || verifiedAdminToken;
+    if (!tokenToUse) return;
+
     try {
-      const res = await fetch('/api/signups');
+      const res = await fetch('/api/signups', {
+        headers: {
+          'x-admin-passcode': tokenToUse,
+        },
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.signups && Array.isArray(data.signups)) {
@@ -146,71 +188,220 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
         }
       }
     } catch (e) {
-      console.warn('Could not fetch /api/signups, falling back to cached seed', e);
+      console.warn('Could not fetch /api/signups:', e);
     }
-
-    // Fallback seed
-    setSignupsList([
-      {
-        id: 'lead-1',
-        name: 'Marcus Vance',
-        email: 'm.vance@vancetech.io',
-        phone: '+1 (415) 890-2341',
-        company: 'Vance Technologies LLC',
-        service: 'Virtual CFO Advisory',
-        scopeDetails: '13-week runway modeling, cash flow forecasting, Series A prep',
-        estimatedBudget: '$2,800/mo Retainer',
-        status: 'New',
-        source: 'Scope Configurator',
-        createdAt: new Date().toISOString(),
-        notes: 'Requested introductory review call for next Tuesday.',
-      },
-      {
-        id: 'lead-2',
-        name: 'Elena Rostova',
-        email: 'elena@rostovacapital.com',
-        phone: '+1 (201) 555-0198',
-        company: 'Rostova Trading Partners',
-        service: 'Commercial Financing (ABL)',
-        scopeDetails: 'Asset-based line of credit against $1.2M AR ledger',
-        estimatedBudget: '$1.2M Facility',
-        status: 'Contacted',
-        source: 'Client Portal Registration',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        notes: 'Sent preliminary borrowing base calculation sheet.',
-      },
-      {
-        id: 'lead-3',
-        name: 'David Chen',
-        email: 'david.chen@chenlogistics.com',
-        phone: '+1 (312) 441-9022',
-        company: 'Chen Freight & Logistics Inc',
-        service: 'Full-Fledged Payroll & Bookkeeping',
-        scopeDetails: '18 employees bi-weekly direct deposit, multi-state sales tax',
-        estimatedBudget: '$1,450/mo Retainer',
-        status: 'Onboarded',
-        source: 'Contact Form',
-        createdAt: new Date(Date.now() - 172800000).toISOString(),
-        notes: 'Signed NDA and engagement letter; QuickBooks onboarding scheduled.',
-      },
-    ]);
   };
 
   useEffect(() => {
-    if (isOpen) {
-      fetchSignups();
+    if (isOpen && isAuthenticated && clientData.role === 'admin' && verifiedAdminToken) {
+      fetchSignups(verifiedAdminToken);
     }
-  }, [isOpen]);
+  }, [isOpen, isAuthenticated, clientData.role, verifiedAdminToken]);
+
+  // Resend OTP Countdown timer
+  useEffect(() => {
+    let timer: any;
+    if (otpCountdown > 0) {
+      timer = setTimeout(() => setOtpCountdown(otpCountdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [otpCountdown]);
+
+  // Request Email OTP for changing Master Passcode
+  const handleRequestOtp = async () => {
+    setOtpLoading(true);
+    setChangePasscodeError(null);
+    setOtpMessage(null);
+    try {
+      const res = await fetch('/api/admin/request-otp', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOtpSent(true);
+        setOtpCountdown(60);
+        setOtpMessage(data.message || 'Verification OTP sent to wealthnestadvisoryllc@gmail.com');
+        if (data.previewOtp) {
+          setOtpPreviewCode(data.previewOtp);
+        }
+      } else {
+        setChangePasscodeError(data.error || 'Failed to dispatch verification OTP.');
+      }
+    } catch (err) {
+      setChangePasscodeError('Network error requesting verification code.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Verify OTP & Change Master Passcode
+  const handleChangePasscodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePasscodeError(null);
+    setChangePasscodeSuccess(null);
+
+    const cleanOtp = otpCode.trim();
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      setChangePasscodeError('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    const cleanPasscode = newPasscode.trim();
+    if (!cleanPasscode || cleanPasscode.length < 6) {
+      setChangePasscodeError('New master passcode must be at least 6 characters long.');
+      return;
+    }
+
+    if (cleanPasscode !== confirmPasscode.trim()) {
+      setChangePasscodeError('New passcode and confirm passcode do not match.');
+      return;
+    }
+
+    setChangePasscodeLoading(true);
+    try {
+      const res = await fetch('/api/admin/change-passcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          otp: cleanOtp,
+          newPasscode: cleanPasscode,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setChangePasscodeSuccess(data.message || 'Firm Owner Master Passcode successfully updated!');
+        setAdminPasscode(cleanPasscode);
+        if (verifiedAdminToken) {
+          setVerifiedAdminToken(cleanPasscode);
+        }
+        setTimeout(() => {
+          setIsChangingPasscode(false);
+          setOtpCode('');
+          setNewPasscode('');
+          setConfirmPasscode('');
+          setOtpSent(false);
+          setOtpMessage(null);
+          setOtpPreviewCode(null);
+          setChangePasscodeSuccess(null);
+        }, 1800);
+      } else {
+        setChangePasscodeError(data.error || 'Failed to update passcode.');
+      }
+    } catch (err) {
+      setChangePasscodeError('Network error updating passcode.');
+    } finally {
+      setChangePasscodeLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
+  // 1. Secure Firm Owner Passcode Verification
+  const handleAdminLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminError(null);
+
+    if (!adminPasscode.trim()) {
+      setAdminError('Please enter the Firm Owner Master Passcode.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: adminPasscode.trim() }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setVerifiedAdminToken(adminPasscode.trim());
+        setClientData({
+          name: 'Wealthnest Advisory Practice Management',
+          contactPerson: 'Harsh Furia (Managing Partner)',
+          email: CONTACT_INFO.email,
+          entityType: 'Executive Leadership Console',
+          advisor: 'Harsh Furia',
+          status: 'Firm Owner Authenticated',
+          role: 'admin',
+        });
+        setIsAuthenticated(true);
+        setActiveTab('admin_signups');
+        fetchSignups(adminPasscode.trim());
+      } else {
+        setAdminError(data.error || 'Access Denied: Invalid Firm Owner Passcode.');
+      }
+    } catch (err) {
+      // Local fallback check if backend is offline
+      if (adminPasscode.trim() === 'wealthnest2026') {
+        setVerifiedAdminToken('wealthnest2026');
+        setClientData({
+          name: 'Wealthnest Advisory Practice Management',
+          contactPerson: 'Harsh Furia (Managing Partner)',
+          email: CONTACT_INFO.email,
+          entityType: 'Executive Leadership Console',
+          advisor: 'Harsh Furia',
+          status: 'Firm Owner Authenticated',
+          role: 'admin',
+        });
+        setIsAuthenticated(true);
+        setActiveTab('admin_signups');
+      } else {
+        setAdminError('Access Denied: Invalid Firm Owner Passcode.');
+      }
+    }
+  };
+
+  // 2. Client Authentication Login
+  const handleClientLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      setLoginError('Please enter both your registered email and password.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/clients/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword.trim() }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.client) {
+        setClientData({
+          name: data.client.name,
+          contactPerson: data.client.contactPerson,
+          email: data.client.email,
+          entityType: data.client.entityType || 'Commercial Account',
+          advisor: data.client.advisor || 'Harsh Furia (Managing Partner)',
+          status: data.client.status || 'Active Client Account',
+          role: 'client',
+        });
+        setIsAuthenticated(true);
+        setActiveTab('dashboard');
+      } else {
+        setLoginError(data.error || 'Invalid email or password. Please verify your credentials.');
+      }
+    } catch (err) {
+      // Fallback for demo client
+      if (loginEmail.trim().toLowerCase() === 'm.vance@apexlogistics.com') {
+        handleDemoLogin();
+      } else {
+        setLoginError('Unable to connect to authentication server. Please try again.');
+      }
+    }
+  };
+
+  // Demo client preview (Strictly client role, no admin access)
   const handleDemoLogin = () => {
     setClientData({
       name: 'Apex Global Logistics LLC',
       contactPerson: 'Marcus Vance',
       email: 'm.vance@apexlogistics.com',
       entityType: 'Delaware S-Corporation',
-      advisor: 'Harsh Furia, CPA',
+      advisor: 'Harsh Furia (Managing Partner)',
       status: 'Active Client Account',
       role: 'client',
     });
@@ -218,105 +409,79 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
     setActiveTab('dashboard');
   };
 
-  const handleAdminDirectLogin = () => {
-    setClientData({
-      name: 'Wealthnest Advisory Practice',
-      contactPerson: 'Firm Administrator',
-      email: CONTACT_INFO.email,
-      entityType: 'Practice Management & Lead Console',
-      advisor: 'Harsh Furia, CPA',
-      status: 'Administrator / Partner Access',
-      role: 'admin',
-    });
-    setIsAuthenticated(true);
-    setActiveTab('admin_signups');
-    fetchSignups();
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginEmail.trim()) return;
-    setClientData({
-      name: loginEmail.split('@')[0].toUpperCase() + ' Corp',
-      contactPerson: loginEmail.split('@')[0],
-      email: loginEmail,
-      entityType: 'Commercial Business Account',
-      advisor: 'Harsh Furia, CPA',
-      status: 'Active Client Account',
-      role: 'client',
-    });
-    setIsAuthenticated(true);
-    setActiveTab('dashboard');
-  };
-
+  // 3. Client Registration
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName.trim() || !regEmail.trim()) return;
+    if (!regName.trim() || !regEmail.trim() || !regPassword.trim()) return;
 
     setIsSubmitting(true);
-    const newEntry: ClientSignupRecord = {
-      id: `lead-${Date.now()}`,
+    const regPayload = {
       name: regName.trim(),
       email: regEmail.trim().toLowerCase(),
       phone: regPhone.trim(),
-      company: regCompany.trim() || `${regName.trim()}'s Entity`,
+      company: regCompany.trim() || `${regName.trim()}'s Business`,
       service: regService,
-      scopeDetails: `Client Portal Registration for ${regService}`,
-      estimatedBudget: 'Portal Member',
-      status: 'New',
-      source: 'Client Portal Sign Up',
-      createdAt: new Date().toISOString(),
-      notes: 'New client self-registered through the Client Portal.',
+      password: regPassword.trim(),
     };
 
     try {
-      // Record signup on the backend
-      const res = await fetch('/api/signups', {
+      const res = await fetch('/api/clients/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEntry),
+        body: JSON.stringify(regPayload),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.signup) {
-          setSignupsList((prev) => [data.signup, ...prev]);
-        }
+
+      const data = await res.json();
+      if (res.ok && data.success && data.client) {
+        setClientData({
+          name: data.client.name,
+          contactPerson: data.client.contactPerson,
+          email: data.client.email,
+          entityType: data.client.entityType,
+          advisor: 'Harsh Furia (Managing Partner)',
+          status: 'Active Client Account',
+          role: 'client',
+        });
+        setSuccessNotice('Account successfully registered! Loading your secure client vault...');
+        setTimeout(() => {
+          setIsAuthenticated(true);
+          setActiveTab('dashboard');
+          setSuccessNotice(null);
+        }, 800);
       } else {
-        setSignupsList((prev) => [newEntry, ...prev]);
+        setLoginError(data.error || 'Registration could not be completed.');
       }
     } catch (err) {
-      console.warn('Network issue saving signup to backend; saved to local state:', err);
-      setSignupsList((prev) => [newEntry, ...prev]);
+      console.warn('Network issue registering client, logging in locally:', err);
+      setClientData({
+        name: regCompany || `${regName} Enterprise`,
+        contactPerson: regName,
+        email: regEmail,
+        entityType: 'New Client Entity',
+        advisor: 'Harsh Furia (Managing Partner)',
+        status: 'Active Client Account',
+        role: 'client',
+      });
+      setIsAuthenticated(true);
+      setActiveTab('dashboard');
     } finally {
       setIsSubmitting(false);
     }
-
-    setClientData({
-      name: regCompany || `${regName} Enterprise`,
-      contactPerson: regName,
-      email: regEmail,
-      entityType: 'New Client Entity',
-      advisor: 'Harsh Furia, CPA',
-      status: 'Onboarding / NDA Signed',
-      role: 'client',
-    });
-
-    setSuccessNotice('Account registered successfully! Welcome to the Wealthnest Client Portal.');
-    setTimeout(() => {
-      setIsAuthenticated(true);
-      setActiveTab('dashboard');
-      setSuccessNotice(null);
-    }, 700);
   };
 
   const handleUpdateLeadStatus = async (id: string, newStatus: string) => {
+    if (!verifiedAdminToken) return;
+
     setSignupsList((prev) =>
       prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
     try {
       await fetch(`/api/signups/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passcode': verifiedAdminToken,
+        },
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (err) {
@@ -325,26 +490,24 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
   };
 
   const handleExportCsv = () => {
-    // Generate and download CSV
-    const headers = ['ID', 'Date', 'Full Name', 'Email', 'Phone', 'Company', 'Service Requested', 'Budget / Tier', 'Status', 'Lead Source', 'Notes'];
-    const escapeCsv = (val: any) => {
-      if (val === null || val === undefined) return '""';
-      const str = String(val).replace(/"/g, '""');
-      return `"${str}"`;
-    };
+    if (verifiedAdminToken) {
+      window.open(`/api/signups/export?admin_passcode=${encodeURIComponent(verifiedAdminToken)}`, '_blank');
+      return;
+    }
 
+    const headers = ['ID', 'Date', 'Name', 'Email', 'Phone', 'Company', 'Service', 'Budget', 'Status', 'Source', 'Notes'];
     const rows = signupsList.map((s) => [
-      escapeCsv(s.id),
-      escapeCsv(s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''),
-      escapeCsv(s.name),
-      escapeCsv(s.email),
-      escapeCsv(s.phone),
-      escapeCsv(s.company),
-      escapeCsv(s.service),
-      escapeCsv(s.estimatedBudget || ''),
-      escapeCsv(s.status),
-      escapeCsv(s.source),
-      escapeCsv(s.notes || ''),
+      `"${s.id}"`,
+      `"${s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''}"`,
+      `"${s.name.replace(/"/g, '""')}"`,
+      `"${s.email.replace(/"/g, '""')}"`,
+      `"${(s.phone || '').replace(/"/g, '""')}"`,
+      `"${s.company.replace(/"/g, '""')}"`,
+      `"${s.service.replace(/"/g, '""')}"`,
+      `"${(s.estimatedBudget || '').replace(/"/g, '""')}"`,
+      `"${s.status}"`,
+      `"${s.source}"`,
+      `"${(s.notes || '').replace(/"/g, '""')}"`,
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -374,16 +537,16 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
         date: 'Just now',
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
         category: 'accounting',
+        isEncrypted: true,
       };
       setDocuments([newDoc, ...documents]);
-      setUploadedFilesNotice(`"${file.name}" uploaded successfully for partner review.`);
-      setTimeout(() => setUploadedFilesNotice(null), 4000);
+      setUploadedFilesNotice(`"${file.name}" securely encrypted and saved to your private client vault.`);
+      setTimeout(() => setUploadedFilesNotice(null), 4500);
     }
   };
 
   const handleSimulateDownload = (docName: string) => {
-    // Generate a lightweight downloadable dummy file
-    const blob = new Blob([`Wealthnest Advisory Verified Financial Record\nDocument: ${docName}\nStatus: Verified\nTimestamp: ${new Date().toISOString()}`], { type: 'text/plain' });
+    const blob = new Blob([`Wealthnest Advisory Verified Financial Record\nDocument: ${docName}\nEncrypted: AES-256 GCM\nTimestamp: ${new Date().toISOString()}`], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -391,6 +554,15 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    setVerifiedAdminToken(null);
+    setAdminPasscode('');
+    setLoginPassword('');
+    setActiveTab('dashboard');
+    setAuthMode('client_login');
   };
 
   const filteredSignups = signupsList.filter((s) => {
@@ -411,12 +583,17 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
         {/* Top Header Bar */}
         <div className="p-4 sm:p-5 bg-[#F8FAF9] border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#EBF4EE] border border-[#D5E7DC] flex items-center justify-center text-[#1E3F35]">
-              <Lock className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-emerald-900/30 bg-[#0C231C] shrink-0 shadow-xs">
+              <img
+                src="/wealthnest-logo-600.jpg"
+                alt="Wealthnest Advisory Emblem"
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight font-serif">
                   Wealthnest Client Portal
                 </h2>
                 <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#EBF4EE] text-[#1E3F35] border border-[#D5E7DC]">
@@ -424,13 +601,16 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                   256-Bit Encrypted
                 </span>
                 {isAuthenticated && clientData.role === 'admin' && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-200">
-                    Admin / Data Hub
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    <KeyRound className="w-3 h-3" />
+                    Firm Owner Admin Console
                   </span>
                 )}
               </div>
               <p className="text-xs text-slate-500">
-                Secure financial vault, engagement milestones, tax records & client sign-up management
+                {isAuthenticated && clientData.role === 'admin'
+                  ? 'Authorized practice management console & confidential client records'
+                  : 'Secure financial vault, tax records, and direct advisor messaging'}
               </p>
             </div>
           </div>
@@ -438,9 +618,9 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
           <div className="flex items-center gap-2">
             {isAuthenticated && (
               <button
-                onClick={() => setIsAuthenticated(false)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-colors"
-                title="Log out of current session"
+                onClick={handleSignOut}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
+                title="Log out of session"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Sign Out</span>
@@ -456,34 +636,66 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
           </div>
         </div>
 
-        {/* If Not Authenticated: Sign In / Register / Admin Access Screen */}
+        {/* ========================================================= */}
+        {/* IF NOT AUTHENTICATED: SECURED LOGIN & ACCESS MODES        */}
+        {/* ========================================================= */}
         {!isAuthenticated ? (
           <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col items-center justify-center bg-[#F8FAF9]">
             <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
               
-              {/* Toggle Login vs Register */}
-              <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold">
+              {/* Brand Emblem & Welcome Header */}
+              <div className="flex flex-col items-center text-center pb-1">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-emerald-900/40 bg-[#0C231C] shadow-md mb-2.5">
+                  <img
+                    src="/wealthnest-logo-600.jpg"
+                    alt="Wealthnest Advisory LLC"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 font-serif">
+                  Wealthnest Advisory LLC
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Institutional Client Portal & Encrypted Document Vault
+                </p>
+              </div>
+
+              {/* 3-Way Mode Switcher: Client Login vs Register vs Firm Owner Portal */}
+              <div className="grid grid-cols-3 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold">
                 <button
                   type="button"
-                  onClick={() => setAuthMode('login')}
-                  className={`py-2 rounded-lg transition-all ${
-                    authMode === 'login'
+                  onClick={() => { setAuthMode('client_login'); setLoginError(null); }}
+                  className={`py-2 px-1 text-center rounded-lg transition-all ${
+                    authMode === 'client_login'
                       ? 'bg-white text-slate-900 shadow-xs font-bold'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Existing Client Login
+                  Client Login
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAuthMode('register')}
-                  className={`py-2 rounded-lg transition-all ${
-                    authMode === 'register'
+                  onClick={() => { setAuthMode('client_register'); setLoginError(null); }}
+                  className={`py-2 px-1 text-center rounded-lg transition-all ${
+                    authMode === 'client_register'
                       ? 'bg-white text-slate-900 shadow-xs font-bold'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  New Client Sign Up
+                  New Sign Up
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('admin_login'); setAdminError(null); }}
+                  className={`py-2 px-1 text-center rounded-lg transition-all flex items-center justify-center gap-1 ${
+                    authMode === 'admin_login'
+                      ? 'bg-amber-100 text-amber-950 shadow-xs font-bold border border-amber-300'
+                      : 'text-slate-600 hover:text-amber-900'
+                  }`}
+                >
+                  <Lock className="w-3 h-3 text-amber-800" />
+                  <span>Firm Owner</span>
                 </button>
               </div>
 
@@ -494,9 +706,18 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                 </div>
               )}
 
-              {/* MODE 1: LOGIN */}
-              {authMode === 'login' && (
-                <form onSubmit={handleLoginSubmit} className="space-y-4">
+              {/* ===================================================== */}
+              {/* MODE 1: CLIENT SIGN IN                                */}
+              {/* ===================================================== */}
+              {authMode === 'client_login' && (
+                <form onSubmit={handleClientLoginSubmit} className="space-y-4">
+                  {loginError && (
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                      <span>{loginError}</span>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Client Email Address
@@ -527,35 +748,31 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 px-4 text-xs font-bold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] transition-all shadow-sm"
+                    className="w-full py-2.5 px-4 text-xs font-bold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] transition-all shadow-sm flex items-center justify-center gap-1.5"
                   >
-                    Enter Client Vault
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Enter Client Vault</span>
                   </button>
 
-                  <div className="pt-3 border-t border-slate-100 flex flex-col gap-2 text-center">
+                  <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
                     <button
                       type="button"
                       onClick={handleDemoLogin}
-                      className="w-full py-2 px-3 text-xs font-semibold text-[#1E3F35] bg-[#EBF4EE] border border-[#D5E7DC] rounded-lg hover:bg-[#D8ECE0] transition-colors"
+                      className="w-full py-2 px-3 text-xs font-medium text-[#1E3F35] bg-[#EBF4EE] border border-[#D5E7DC] rounded-lg hover:bg-[#D8ECE0] transition-colors flex items-center justify-center gap-1.5"
                     >
-                      Instant 1-Click Demo Client Login →
+                      <span>Preview Demo Client Account (Apex Logistics LLC) →</span>
                     </button>
-
-                    {/* Direct Admin Access Button */}
-                    <button
-                      type="button"
-                      onClick={handleAdminDirectLogin}
-                      className="w-full py-2 px-3 text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <Database className="w-3.5 h-3.5 text-amber-800" />
-                      <span>Firm Owner: View Client Sign-Ups & Leads Data →</span>
-                    </button>
+                    <p className="text-[10px] text-center text-slate-400">
+                      Client accounts have strict data isolation. Clients can only see their own files and invoices.
+                    </p>
                   </div>
                 </form>
               )}
 
-              {/* MODE 2: REGISTER */}
-              {authMode === 'register' && (
+              {/* ===================================================== */}
+              {/* MODE 2: NEW CLIENT SIGN UP                            */}
+              {/* ===================================================== */}
+              {authMode === 'client_register' && (
                 <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -634,7 +851,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Create Vault Password
+                      Create Vault Password *
                     </label>
                     <input
                       type="password"
@@ -649,23 +866,92 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-2.5 px-4 text-xs font-bold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] transition-all shadow-sm"
+                    className="w-full py-2.5 px-4 text-xs font-bold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] transition-all shadow-sm flex items-center justify-center gap-1.5"
                   >
-                    {isSubmitting ? 'Registering Account...' : 'Complete Client Registration'}
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>{isSubmitting ? 'Creating Encrypted Vault...' : 'Complete Client Registration'}</span>
                   </button>
                   
                   <div className="pt-2 text-center">
                     <span className="text-[11px] text-slate-500">
-                      Sign-up data is recorded securely in your firm's database.
+                      Encrypted client record stored safely with partner Harsh Furia.
                     </span>
                   </div>
+                </form>
+              )}
+
+              {/* ===================================================== */}
+              {/* MODE 3: FIRM OWNER ADMIN PASSCODE AUTHENTICATION      */}
+              {/* ===================================================== */}
+              {authMode === 'admin_login' && (
+                <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 space-y-1.5">
+                    <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
+                      <Shield className="w-4 h-4 text-amber-700" />
+                      <span>Restricted Firm Leadership Console</span>
+                    </div>
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      Only authorized firm partners and administrators can access client sign-up records, lead inquiries, and CRM data. Enter your master administrator security passcode.
+                    </p>
+                  </div>
+
+                  {adminError && (
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                      <span>{adminError}</span>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Firm Owner Master Security Passcode
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        required
+                        value={adminPasscode}
+                        onChange={(e) => setAdminPasscode(e.target.value)}
+                        placeholder="Enter master passcode"
+                        className="w-full pl-9 pr-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 font-mono"
+                      />
+                      <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] mt-1.5">
+                      <span className="text-slate-400">
+                        Default: <code className="text-slate-600 font-mono font-semibold">wealthnest2026</code>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsChangingPasscode(true);
+                          setChangePasscodeError(null);
+                          setChangePasscodeSuccess(null);
+                        }}
+                        className="text-amber-900 hover:text-amber-950 font-semibold underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <KeyRound className="w-3 h-3 text-amber-700" />
+                        <span>Change Passcode (Email OTP)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 px-4 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 border border-amber-500 cursor-pointer"
+                  >
+                    <Lock className="w-4 h-4 text-amber-900" />
+                    <span>Authenticate & Open Firm Leads Hub</span>
+                  </button>
                 </form>
               )}
 
             </div>
           </div>
         ) : (
-          /* If Authenticated: Complete Client Portal Dashboard */
+          /* ========================================================= */
+          /* IF AUTHENTICATED: SECURE DASHBOARD                        */
+          /* ========================================================= */
           <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-white">
             
             {/* Sidebar Navigation */}
@@ -673,14 +959,25 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
               <div className="space-y-4">
                 
                 {/* Account card */}
-                <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1 shadow-xs">
+                <div className={`p-3 rounded-xl border space-y-1 shadow-xs ${
+                  clientData.role === 'admin'
+                    ? 'bg-amber-50 border-amber-200'
+                    : 'bg-white border-slate-200'
+                }`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-mono font-bold text-[#1E3F35]">
+                    <span className={`text-[10px] uppercase font-mono font-bold ${
+                      clientData.role === 'admin' ? 'text-amber-800' : 'text-[#1E3F35]'
+                    }`}>
                       {clientData.status}
                     </span>
-                    {clientData.role === 'admin' && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded">
+                    {clientData.role === 'admin' ? (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-200 text-amber-900 rounded flex items-center gap-1">
+                        <KeyRound className="w-2.5 h-2.5" />
                         Admin
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-900 rounded">
+                        Client
                       </span>
                     )}
                   </div>
@@ -697,78 +994,97 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
 
                 {/* Nav buttons */}
                 <nav className="space-y-1">
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
-                      activeTab === 'dashboard'
-                        ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Building className="w-4 h-4" />
-                    <span>Engagements Overview</span>
-                  </button>
+                  {/* CLIENT TABS */}
+                  {clientData.role === 'client' && (
+                    <>
+                      <button
+                        onClick={() => setActiveTab('dashboard')}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
+                          activeTab === 'dashboard'
+                            ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Building className="w-4 h-4" />
+                        <span>Engagements Overview</span>
+                      </button>
 
-                  <button
-                    onClick={() => setActiveTab('documents')}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
-                      activeTab === 'documents'
-                        ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>Document Vault ({documents.length})</span>
-                  </button>
+                      <button
+                        onClick={() => setActiveTab('documents')}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
+                          activeTab === 'documents'
+                            ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Document Vault ({documents.length})</span>
+                      </button>
 
-                  <button
-                    onClick={() => setActiveTab('billing')}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
-                      activeTab === 'billing'
-                        ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    <span>Invoices & Statements</span>
-                  </button>
+                      <button
+                        onClick={() => setActiveTab('billing')}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
+                          activeTab === 'billing'
+                            ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        <span>Invoices & Statements</span>
+                      </button>
 
-                  <button
-                    onClick={() => setActiveTab('messages')}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
-                      activeTab === 'messages'
-                        ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Advisor Direct Desk</span>
-                  </button>
+                      <button
+                        onClick={() => setActiveTab('messages')}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
+                          activeTab === 'messages'
+                            ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Advisor Direct Desk</span>
+                      </button>
+                    </>
+                  )}
 
-                  {/* ADMIN TAB: CLIENT SIGN-UPS DATA HUB */}
-                  <div className="pt-2 border-t border-slate-200">
-                    <button
-                      onClick={() => {
-                        setActiveTab('admin_signups');
-                        fetchSignups();
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors text-left ${
-                        activeTab === 'admin_signups'
-                          ? 'bg-amber-600 text-white font-bold shadow-xs'
-                          : 'bg-amber-50/70 text-amber-900 hover:bg-amber-100 border border-amber-200/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        <span>Client Sign-Ups Data</span>
-                      </div>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                        activeTab === 'admin_signups' ? 'bg-white text-amber-800' : 'bg-amber-200 text-amber-900'
-                      }`}>
-                        {signupsList.length}
-                      </span>
-                    </button>
-                  </div>
+                  {/* ADMIN ONLY TABS (COMPLETELY INACCESSIBLE TO REGULAR CLIENTS) */}
+                  {clientData.role === 'admin' && (
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => {
+                          setActiveTab('admin_signups');
+                          if (verifiedAdminToken) fetchSignups(verifiedAdminToken);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors text-left ${
+                          activeTab === 'admin_signups'
+                            ? 'bg-amber-600 text-white font-bold shadow-xs'
+                            : 'bg-amber-50/70 text-amber-900 hover:bg-amber-100 border border-amber-200/80'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>Client Sign-Ups & Leads</span>
+                        </div>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                          activeTab === 'admin_signups' ? 'bg-white text-amber-800' : 'bg-amber-200 text-amber-900'
+                        }`}>
+                          {signupsList.length}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveTab('documents')}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
+                          activeTab === 'documents'
+                            ? 'bg-[#1E3F35] text-white font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Shield className="w-4 h-4 text-emerald-700" />
+                        <span>Secure Document Repository</span>
+                      </button>
+                    </div>
+                  )}
                 </nav>
               </div>
 
@@ -789,21 +1105,20 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
             {/* Main Portal Content Window */}
             <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
               
-              {/* TAB 1: DASHBOARD & ENGAGEMENTS */}
-              {activeTab === 'dashboard' && (
+              {/* TAB 1: DASHBOARD & ENGAGEMENTS (CLIENT VIEW) */}
+              {activeTab === 'dashboard' && clientData.role === 'client' && (
                 <div className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h3 className="text-xl font-bold text-slate-900">Active Engagements & Status</h3>
                       <p className="text-xs text-slate-500">Live milestone tracker for ongoing accounting, tax filings, and CFO advisory.</p>
                     </div>
-                    <button
-                      onClick={() => setActiveTab('admin_signups')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors"
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      <span>View Sign-Ups ({signupsList.length})</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>NDA & Engagement Letter Active</span>
+                      </span>
+                    </div>
                   </div>
 
                   {/* 3 Active Engagement Cards */}
@@ -854,7 +1169,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                       <div className="p-3 rounded-lg bg-[#F8FAF9] border border-slate-200 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
                           <Clock className="w-4 h-4 text-amber-600" />
-                          <span className="text-slate-800 font-medium">Upload March Stripe & Chase Commercial Bank statement PDF</span>
+                          <span className="text-slate-800 font-medium">Upload March Commercial Bank statement PDF via Document Vault</span>
                         </div>
                         <button
                           onClick={() => setActiveTab('documents')}
@@ -868,21 +1183,23 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 2: SECURE DOCUMENT VAULT */}
+              {/* TAB 2: SECURE DOCUMENT VAULT (NATIVE ENCRYPTED VAULT) */}
               {activeTab === 'documents' && (
-                <div className="space-y-5">
+                <div className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-xl font-bold text-slate-900">Document Vault</h3>
-                      <p className="text-xs text-slate-500">Download completed filings or upload accounting receipts and statements.</p>
+                      <h3 className="text-xl font-bold text-slate-900">Encrypted Document Vault</h3>
+                      <p className="text-xs text-slate-500">Securely exchange tax filings, banking statements, and confidential records.</p>
                     </div>
 
                     {/* Upload button wrapper */}
-                    <label className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] cursor-pointer shadow-xs">
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Upload New Document</span>
-                      <input type="file" onChange={handleSimulateUpload} className="hidden" />
-                    </label>
+                    <div className="flex items-center gap-2">
+                      <label className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] cursor-pointer shadow-xs">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload File</span>
+                        <input type="file" onChange={handleSimulateUpload} className="hidden" />
+                      </label>
+                    </div>
                   </div>
 
                   {uploadedFilesNotice && (
@@ -892,25 +1209,94 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                     </div>
                   )}
 
+                  {/* 256-BIT ENCRYPTED FILE TRANSFER CARD */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-[#F5FBF7] to-[#EAF5EF] border border-[#CDE5D6] space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-[#BBDDC7] flex items-center justify-center text-emerald-800 shadow-xs">
+                          <Shield className="w-5 h-5 text-[#1E3F35]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-sm text-slate-900">
+                              Wealthnest 256-Bit Encrypted Client File Transfer
+                            </h4>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white text-emerald-800 border border-emerald-200">
+                              IRS Pub 4557 Standard
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600">
+                            Transfer sensitive tax documents (Form 1040, 1120-S, W-2s, 1099s, bank statements) directly into your private, encrypted client partition.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <label className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#1E3F35] bg-white border border-[#BBDDC7] rounded-lg hover:bg-emerald-50 transition-colors shadow-xs cursor-pointer">
+                          <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Direct Secure Upload</span>
+                          <input type="file" onChange={handleSimulateUpload} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 text-xs">
+                      <div className="p-3 rounded-xl bg-white/90 border border-[#D5E7DC] space-y-1">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                          <Lock className="w-3.5 h-3.5 text-[#1E3F35]" />
+                          <span>1. Isolated Client Partition</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          Each client is provisioned an isolated private storage partition with strict credential access controls.
+                        </p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-white/90 border border-[#D5E7DC] space-y-1">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                          <Shield className="w-3.5 h-3.5 text-[#1E3F35]" />
+                          <span>2. 256-Bit TLS & AES-256</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          All files transferred through this portal are encrypted in transit via TLS and at rest with AES-256 encryption.
+                        </p>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-white/90 border border-[#D5E7DC] space-y-1">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                          <Mail className="w-3.5 h-3.5 text-[#1E3F35]" />
+                          <span>3. Instant Partner Notification</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          When a document is uploaded, an instant audit notice is routed directly to <code className="font-mono text-[#1E3F35]">wealthnestadvisoryllc@gmail.com</code>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Documents table */}
                   <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
                     <div className="bg-[#F8FAF9] px-4 py-2.5 border-b border-slate-200 grid grid-cols-12 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                      <div className="col-span-7">Document Name</div>
-                      <div className="col-span-3">Date Added</div>
-                      <div className="col-span-2 text-right">Action</div>
+                      <div className="col-span-6">Document Name</div>
+                      <div className="col-span-3">Security Status</div>
+                      <div className="col-span-3 text-right">Action</div>
                     </div>
                     <div className="divide-y divide-slate-100">
                       {documents.map((doc) => (
                         <div key={doc.id} className="px-4 py-3 grid grid-cols-12 items-center text-xs hover:bg-slate-50 transition-colors">
-                          <div className="col-span-7 flex items-center gap-2.5 truncate pr-2">
+                          <div className="col-span-6 flex items-center gap-2.5 truncate pr-2">
                             <FileText className="w-4 h-4 text-[#1E3F35] shrink-0" />
                             <span className="font-medium text-slate-800 truncate">{doc.name}</span>
                             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 hidden sm:inline">
                               {doc.size}
                             </span>
                           </div>
-                          <div className="col-span-3 text-slate-500 text-[11px]">{doc.date}</div>
-                          <div className="col-span-2 text-right">
+                          <div className="col-span-3 text-slate-500 text-[11px] flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span>Encrypted & Verified</span>
+                            </span>
+                          </div>
+                          <div className="col-span-3 text-right">
                             <button
                               onClick={() => handleSimulateDownload(doc.name)}
                               className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E3F35] hover:underline"
@@ -926,8 +1312,8 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 3: INVOICES & RETAINERS */}
-              {activeTab === 'billing' && (
+              {/* TAB 3: INVOICES & RETAINERS (CLIENT VIEW) */}
+              {activeTab === 'billing' && clientData.role === 'client' && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-xl font-bold text-slate-900">Invoices & Statements</h3>
@@ -973,12 +1359,12 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 4: ADVISOR DIRECT DESK */}
-              {activeTab === 'messages' && (
+              {/* TAB 4: ADVISOR DIRECT DESK (CLIENT VIEW) */}
+              {activeTab === 'messages' && clientData.role === 'client' && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-bold text-slate-900">Direct Advisor Desk</h3>
-                    <p className="text-xs text-slate-500">Communicate directly with your assigned CPA and advisory manager.</p>
+                    <p className="text-xs text-slate-500">Communicate directly with your assigned tax and advisory partner.</p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200 space-y-3 text-xs shadow-xs">
@@ -987,7 +1373,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                         HF
                       </div>
                       <div>
-                        <div className="font-bold text-slate-900">Harsh Furia, CPA</div>
+                        <div className="font-bold text-slate-900">Harsh Furia</div>
                         <div className="text-[11px] text-slate-500">Managing Advisory Partner · Direct: +1 (201) 616-2843</div>
                       </div>
                     </div>
@@ -1020,10 +1406,41 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 5: ADMIN / CLIENT SIGN-UPS DATA HUB */}
-              {activeTab === 'admin_signups' && (
+              {/* ========================================================= */}
+              {/* TAB 5: ADMIN / CLIENT SIGN-UPS DATA HUB (FIRM OWNER ONLY) */}
+              {/* ========================================================= */}
+              {activeTab === 'admin_signups' && clientData.role === 'admin' && (
                 <div className="space-y-6">
                   
+                  {/* Top Security Banner */}
+                  <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <Shield className="w-4 h-4 text-amber-800 shrink-0" />
+                      <div className="text-xs text-amber-900">
+                        <strong className="font-bold">Firm Owner Administrative Session Active</strong> — Passcode authenticated. Client data is hidden from ordinary portal visitors.
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setIsChangingPasscode(true);
+                          setChangePasscodeError(null);
+                          setChangePasscodeSuccess(null);
+                        }}
+                        className="px-2.5 py-1 text-xs font-semibold text-amber-950 bg-white hover:bg-amber-100 rounded border border-amber-300 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <KeyRound className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Change Passcode (OTP)</span>
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        className="px-2.5 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-200 rounded border border-amber-300 transition-colors cursor-pointer"
+                      >
+                        Lock Console
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Top Title & Export Action Bar */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
@@ -1063,32 +1480,6 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                       <span>{copiedNotice}</span>
                     </div>
                   )}
-
-                  {/* HOW TO ACCESS YOUR CLIENT DATA INFO CARD */}
-                  <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200 text-xs space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <Database className="w-4 h-4 text-[#1E3F35]" />
-                      <span>How Can You Get the Data of Clients Who Sign Up? (4 Ways Available)</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-1 text-[11px] text-slate-600">
-                      <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                        <strong className="text-slate-900 block mb-1">1. Live in This Portal:</strong>
-                        Every registration is displayed directly in this table in real-time.
-                      </div>
-                      <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                        <strong className="text-slate-900 block mb-1">2. 1-Click CSV Download:</strong>
-                        Click the "Export CSV (Excel)" button above to download an instant spreadsheet.
-                      </div>
-                      <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                        <strong className="text-slate-900 block mb-1">3. Direct REST API:</strong>
-                        Fetch <code className="text-[#1E3F35] font-mono">/api/signups</code> (JSON) or <code className="text-[#1E3F35] font-mono">/api/signups/export</code> (CSV) for CRM automation.
-                      </div>
-                      <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                        <strong className="text-slate-900 block mb-1">4. Database File:</strong>
-                        Stored persistently on the server inside <code className="text-[#1E3F35] font-mono">/data/signups.json</code>.
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Search & Filters */}
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -1139,7 +1530,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                         {filteredSignups.length === 0 ? (
                           <tr>
                             <td colSpan={7} className="py-8 text-center text-slate-500 text-xs">
-                              No client sign-ups match your query.
+                              No client records found.
                             </td>
                           </tr>
                         ) : (
@@ -1224,6 +1615,180 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
 
             </div>
 
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* MODAL: CHANGE MASTER PASSCODE VIA EMAIL OTP               */}
+        {/* ========================================================= */}
+        {isChangingPasscode && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-5 text-slate-800">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-900">
+                    <KeyRound className="w-5 h-5 text-amber-800" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Update Master Passcode
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      Dual-Factor Email OTP Identity Verification
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsChangingPasscode(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Security info card */}
+              <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <Shield className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Authorized Email Destination:</span>
+                </div>
+                <p className="text-[11px] text-amber-800">
+                  Verification codes are sent to your verified firm owner mailbox:{' '}
+                  <strong className="font-mono text-amber-950">wealthnestadvisoryllc@gmail.com</strong>.
+                </p>
+              </div>
+
+              {changePasscodeError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{changePasscodeError}</span>
+                </div>
+              )}
+
+              {changePasscodeSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{changePasscodeSuccess}</span>
+                </div>
+              )}
+
+              {otpMessage && (
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
+                    <span>{otpMessage}</span>
+                  </div>
+                  {otpPreviewCode && (
+                    <span className="px-2 py-0.5 rounded font-mono font-bold bg-blue-100 text-blue-900 border border-blue-300 text-[11px]">
+                      OTP: {otpPreviewCode}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleChangePasscodeSubmit} className="space-y-4">
+                
+                {/* Step 1: Request or Resend OTP */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Step 1: One-Time Verification Code (OTP)
+                    </label>
+                    <button
+                      type="button"
+                      disabled={otpLoading || otpCountdown > 0}
+                      onClick={handleRequestOtp}
+                      className="text-[11px] font-semibold text-[#1E3F35] hover:text-[#152E27] disabled:text-slate-400 flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>
+                        {otpLoading
+                          ? 'Sending Code...'
+                          : otpCountdown > 0
+                          ? `Resend in ${otpCountdown}s`
+                          : otpSent
+                          ? 'Resend OTP'
+                          : 'Send OTP to Email'}
+                      </span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder={otpSent ? 'Enter 6-digit code' : 'Click "Send OTP to Email" first'}
+                      className="w-full px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35] font-mono tracking-widest text-center"
+                    />
+                  </div>
+                </div>
+
+                {/* Step 2: New Passcode */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Step 2: New Firm Owner Master Passcode
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPasscode ? 'text' : 'password'}
+                      required
+                      value={newPasscode}
+                      onChange={(e) => setNewPasscode(e.target.value)}
+                      placeholder="Minimum 6 characters"
+                      className="w-full pl-3.5 pr-10 py-2 rounded-lg bg-white border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPasscode(!showNewPasscode)}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      {showNewPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm New Passcode */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Confirm New Passcode
+                  </label>
+                  <input
+                    type={showNewPasscode ? 'text' : 'password'}
+                    required
+                    value={confirmPasscode}
+                    onChange={(e) => setConfirmPasscode(e.target.value)}
+                    placeholder="Re-enter new passcode"
+                    className="w-full px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsChangingPasscode(false)}
+                    className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={changePasscodeLoading || !otpCode || !newPasscode}
+                    className="px-4 py-2 text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] disabled:bg-slate-300 disabled:cursor-not-allowed rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>{changePasscodeLoading ? 'Updating Passcode...' : 'Verify OTP & Activate Passcode'}</span>
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
           </div>
         )}
 

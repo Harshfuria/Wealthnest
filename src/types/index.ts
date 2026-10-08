@@ -37,5 +37,20 @@ export interface CaseStudy {
 export interface FAQItem {
   question: string;
   answer: string;
-  category: 'pricing' | 'process' | 'security' | 'cfo' | 'financing';
+  category: 'pricing' | 'process' | 'security' | 'cfo' | 'financing' | 'tax';
+}
+
+export interface IndustryItem {
+  id: string;
+  title: string;
+  description: string;
+  keyServices: string[];
+  painPointsSolved: string;
+}
+
+export interface PillarItem {
+  id: string;
+  title: string;
+  description: string;
+  detail: string;
 }

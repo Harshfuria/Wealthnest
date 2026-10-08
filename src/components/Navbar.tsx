@@ -1,116 +1,153 @@
 import React, { useState } from 'react';
-import { MessageSquare, Phone, Menu, X, Sparkles, User, Lock } from 'lucide-react';
+import { Phone, Menu, X, Lock, Image as ImageIcon, Shield, Mail } from 'lucide-react';
 import { CONTACT_INFO } from '../data/servicesData';
+import { WealthnestLogo } from './WealthnestLogo';
 
 interface NavbarProps {
   onOpenBooking: () => void;
   onOpenClientPortal: () => void;
-  onNavigateToCalculator: () => void;
-  onNavigateToResources?: () => void;
-  onOpenChat: () => void;
+  onNavigateToSection?: (sectionId: string) => void;
+  onOpenBrandKit?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenBooking,
   onOpenClientPortal,
-  onNavigateToCalculator,
-  onNavigateToResources,
-  onOpenChat,
+  onNavigateToSection,
+  onOpenBrandKit,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    if (onNavigateToSection) {
+      onNavigateToSection(id);
+    } else {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/90 transition-all">
+    <header className="sticky top-0 z-50 bg-white/98 backdrop-blur-md border-b border-slate-200 shadow-2xs transition-all">
+      {/* Top micro-bar: Trust signals & direct phone */}
+      <div className="hidden md:block bg-[#0C231C] text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-emerald-950">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4 text-emerald-100/90">
+            <span className="flex items-center gap-1.5">
+              <Shield className="w-3 h-3 text-amber-400" />
+              <span>Strategic Accounting, Tax & Advisory Practice • Jersey City, NJ & Nationwide (50 States)</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-5">
+            <a
+              href={`tel:${CONTACT_INFO.phone}`}
+              className="hover:text-amber-300 transition-colors flex items-center gap-1.5 font-medium text-white"
+            >
+              <Phone className="w-3 h-3 text-amber-400" />
+              <span>Direct: {CONTACT_INFO.phoneDisplay}</span>
+            </a>
+            <a
+              href={`mailto:${CONTACT_INFO.email}`}
+              className="hover:text-amber-300 transition-colors flex items-center gap-1.5"
+            >
+              <Mail className="w-3 h-3 text-emerald-400" />
+              <span>{CONTACT_INFO.email}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main navigation header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Zone 1: Wordmark */}
+          
+          {/* Brand Logo & Name */}
           <a
             href="/"
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 hover:text-[#1E3F35] transition-colors"
+            className="flex items-center transition-opacity hover:opacity-95"
+            aria-label="Wealthnest Advisory LLC Home"
           >
-            Wealthnest Advisory
+            <WealthnestLogo variant="nav" />
           </a>
 
-          {/* Zone 2: Navigation links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600">
-            <a href="#services" className="hover:text-[#1E3F35] transition-colors">
+          {/* Clean text navigation links */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-700">
+            <a
+              href="#about"
+              onClick={(e) => handleNavClick(e, 'about')}
+              className="hover:text-[#1E3F35] transition-colors"
+            >
+              About
+            </a>
+            <a
+              href="#services"
+              onClick={(e) => handleNavClick(e, 'services')}
+              className="hover:text-[#1E3F35] transition-colors"
+            >
               Services
             </a>
-            <a href="#rates" className="hover:text-[#1E3F35] transition-colors">
-              Engagement Models
-            </a>
             <a
-              href="#calculator"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToCalculator();
-              }}
+              href="#specializations"
+              onClick={(e) => handleNavClick(e, 'specializations')}
               className="hover:text-[#1E3F35] transition-colors"
             >
-              Scope Configurator
+              Specializations
             </a>
             <a
-              href="#resources"
-              onClick={(e) => {
-                if (onNavigateToResources) {
-                  e.preventDefault();
-                  onNavigateToResources();
-                }
-              }}
+              href="#industries"
+              onClick={(e) => handleNavClick(e, 'industries')}
               className="hover:text-[#1E3F35] transition-colors"
             >
-              Resources & News
+              Industries
             </a>
-            <a href="#faq" className="hover:text-[#1E3F35] transition-colors">
+            <a
+              href="#tools"
+              onClick={(e) => handleNavClick(e, 'tools')}
+              className="hover:text-[#1E3F35] transition-colors font-medium text-emerald-800"
+            >
+              IRS Tools
+            </a>
+            <a
+              href="#faq"
+              onClick={(e) => handleNavClick(e, 'faq')}
+              className="hover:text-[#1E3F35] transition-colors"
+            >
               FAQ
+            </a>
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, 'contact')}
+              className="hover:text-[#1E3F35] transition-colors"
+            >
+              Contact
             </a>
           </nav>
 
-          {/* Zone 3: Primary actions */}
-          <div className="hidden sm:flex items-center gap-2.5">
-            {/* Client Portal Button */}
+          {/* Action cluster: Client Portal & Schedule Consultation */}
+          <div className="hidden sm:flex items-center gap-3">
+            {/* Secure Client Portal Button */}
             <button
               onClick={onOpenClientPortal}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 transition-all shadow-2xs whitespace-nowrap"
-              aria-label="Open Client Portal"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-300 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+              aria-label="Access Encrypted Client Portal"
             >
               <Lock className="w-3.5 h-3.5 text-[#1E3F35]" />
               <span>Client Portal</span>
             </button>
 
-            {/* AI Advisor Chatbot */}
-            <button
-              onClick={onOpenChat}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#1E3F35] bg-[#EBF4EE] border border-[#C2DFCF] rounded-lg hover:bg-[#DCEEE3] transition-all whitespace-nowrap"
-              aria-label="Open AI Advisor Chat"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#1E3F35]" />
-              <span>AI Advisor</span>
-            </button>
-
-            {/* WhatsApp */}
-            <a
-              href={`${CONTACT_INFO.whatsappUrl}?text=${encodeURIComponent('Hello Wealthnest Advisory, I would like to inquire about your accounting and advisory services.')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all whitespace-nowrap"
-              aria-label="Chat on WhatsApp"
-            >
-              <MessageSquare className="w-3.5 h-3.5 text-emerald-700" />
-              <span>WhatsApp</span>
-            </a>
-
-            {/* Book Call */}
+            {/* Schedule Consultation Call Button */}
             <button
               onClick={onOpenBooking}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27] active:scale-98 transition-all whitespace-nowrap shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] active:scale-98 rounded-lg transition-all shadow-sm cursor-pointer whitespace-nowrap"
             >
-              <Phone className="w-3.5 h-3.5 text-white" />
-              <span>Book Call</span>
+              <Phone className="w-3.5 h-3.5 text-amber-300" />
+              <span>Schedule Consultation</span>
             </button>
           </div>
 
-          {/* Mobile menu trigger */}
+          {/* Mobile hamburger menu */}
           <div className="flex lg:hidden items-center gap-2">
             <button
               onClick={onOpenClientPortal}
@@ -121,13 +158,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Lock className="w-4 h-4 text-[#1E3F35]" />
             </button>
             <button
-              onClick={onOpenChat}
-              className="p-2 text-[#1E3F35] bg-[#EBF4EE] rounded-lg border border-[#C2DFCF]"
-              aria-label="Open AI Advisor"
-            >
-              <Sparkles className="w-4 h-4" />
-            </button>
-            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
               aria-label="Toggle Navigation Menu"
@@ -135,60 +165,79 @@ export const Navbar: React.FC<NavbarProps> = ({
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
+
         </div>
       </div>
 
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3">
-          <nav className="flex flex-col space-y-2 text-base font-medium text-slate-700">
+        <div className="lg:hidden border-b border-slate-200 bg-white px-5 pt-3 pb-6 space-y-3 shadow-lg">
+          <nav className="flex flex-col space-y-2 text-sm font-medium text-slate-700">
+            <a
+              href="#about"
+              onClick={(e) => handleNavClick(e, 'about')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
+            >
+              About Firm
+            </a>
             <a
               href="#services"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50"
+              onClick={(e) => handleNavClick(e, 'services')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
             >
-              Services
+              Services & Accounting
             </a>
             <a
-              href="#rates"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50"
+              href="#specializations"
+              onClick={(e) => handleNavClick(e, 'specializations')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
             >
-              Engagement Models
+              Cross-Border & Specializations
             </a>
             <a
-              href="#calculator"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onNavigateToCalculator();
-              }}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50"
+              href="#industries"
+              onClick={(e) => handleNavClick(e, 'industries')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
             >
-              Scope Configurator
+              Industries We Serve
             </a>
             <a
-              href="#resources"
-              onClick={(e) => {
-                setMobileMenuOpen(false);
-                if (onNavigateToResources) {
-                  e.preventDefault();
-                  onNavigateToResources();
-                }
-              }}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50"
+              href="#tools"
+              onClick={(e) => handleNavClick(e, 'tools')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
             >
-              Resources & News
+              IRS Tools & Links
             </a>
             <a
               href="#faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50"
+              onClick={(e) => handleNavClick(e, 'faq')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
             >
-              FAQ
+              Frequently Asked Questions
             </a>
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, 'contact')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
+            >
+              Contact Us
+            </a>
+            {onOpenBrandKit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenBrandKit();
+                }}
+                className="px-3 py-2 rounded-lg hover:bg-slate-50 text-left flex items-center gap-2 text-slate-600 cursor-pointer"
+              >
+                <ImageIcon className="w-4 h-4 text-amber-600" />
+                <span>Official Brand Logo Kit (.JPG)</span>
+              </button>
+            )}
           </nav>
 
-          <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
+          <div className="pt-3 border-t border-slate-200 flex flex-col gap-2.5">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -197,32 +246,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-full py-2.5 px-4 text-center font-bold text-xs text-slate-800 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center gap-2"
             >
               <Lock className="w-4 h-4 text-[#1E3F35]" />
-              <span>Access Client Portal Vault</span>
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenChat();
-              }}
-              className="w-full py-2.5 px-4 text-center font-semibold text-xs text-[#1E3F35] bg-[#EBF4EE] border border-[#C2DFCF] rounded-lg flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-4 h-4 text-[#1E3F35]" />
-              <span>Launch AI Advisory Chatbot</span>
+              <span>Access Encrypted Client Portal</span>
             </button>
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenBooking();
               }}
-              className="w-full py-2.5 px-4 text-center font-semibold text-xs text-white bg-[#1E3F35] rounded-lg hover:bg-[#152E27]"
+              className="w-full py-2.5 px-4 text-center font-bold text-xs text-white bg-[#1E3F35] hover:bg-[#152E27] rounded-lg flex items-center justify-center gap-2"
             >
-              Book Free Consultation Call
+              <Phone className="w-3.5 h-3.5 text-amber-300" />
+              <span>Schedule Free Consultation</span>
             </button>
             <a
               href={`tel:${CONTACT_INFO.phone}`}
-              className="w-full py-2 px-4 text-center font-medium text-xs text-slate-700 bg-slate-50 rounded-lg border border-slate-200"
+              className="w-full py-2 px-4 text-center font-medium text-xs text-slate-700 bg-slate-50 rounded-lg border border-slate-200 block"
             >
-              Direct Line: {CONTACT_INFO.phoneDisplay}
+              Direct Office Line: {CONTACT_INFO.phoneDisplay}
             </a>
           </div>
         </div>

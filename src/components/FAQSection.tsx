@@ -20,14 +20,14 @@ export const FAQSection: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-12 space-y-3">
-          <div className="text-xs font-semibold text-[#1E3F35] tracking-wider uppercase">
-            06. Frequently Asked Questions
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 [text-wrap:balance]">
-            Direct Answers on Rates, Scope & Security
+          <span className="text-xs font-bold text-[#1E3F35] tracking-wider uppercase block">
+            Client Advisory Assistance
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-serif">
+            Frequently Asked Questions
           </h2>
-          <p className="text-base text-slate-600">
-            Have questions about how we handle on-boarding, hourly tracking, or IRS representations?
+          <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
+            Clear, transparent answers about our advisory engagement models, 50-state virtual process, onboarding timeline, and data confidentiality standards.
           </p>
         </div>
 
