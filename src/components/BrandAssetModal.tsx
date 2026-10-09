@@ -217,6 +217,90 @@ export const BrandAssetModal: React.FC<BrandAssetModalProps> = ({ isOpen, onClos
               </div>
             </div>
           </div>
+
+          {/* Official Intuit QuickBooks Certification Badges */}
+          <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-50/60 to-slate-50 border border-emerald-200/80 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-800" />
+                <h3 className="text-sm font-bold text-slate-900 font-serif">
+                  Intuit QuickBooks ProAdvisor Certifications
+                </h3>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                3 Badges Verified
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Official certification badges issued by Intuit ProAdvisor Academy. Available in full-resolution PNG formats for email signatures, proposals, invoices, and social media profiles.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              {/* Badge 1: Level 1 */}
+              <div className="p-4 rounded-xl bg-white border border-slate-200 flex flex-col items-center text-center space-y-3 shadow-2xs">
+                <img
+                  src="/intuit-quickbooks-certification-level-1.png"
+                  alt="QuickBooks Level 1 Certified"
+                  className="w-24 h-24 object-contain drop-shadow-sm"
+                />
+                <div>
+                  <div className="text-xs font-bold text-slate-900">QuickBooks Level 1</div>
+                  <div className="text-[10px] text-slate-500">Core Bookkeeping Certified</div>
+                </div>
+                <a
+                  href="/intuit-quickbooks-certification-level-1.png"
+                  download="intuit-quickbooks-certification-level-1.png"
+                  className="w-full py-1.5 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#1E3F35] font-semibold text-[11px] flex items-center justify-center gap-1.5 transition-colors border border-emerald-200/80"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>Download (.PNG)</span>
+                </a>
+              </div>
+
+              {/* Badge 2: Level 2 */}
+              <div className="p-4 rounded-xl bg-white border border-slate-200 flex flex-col items-center text-center space-y-3 shadow-2xs">
+                <img
+                  src="/intuit-quickbooks-certification-level-2.png"
+                  alt="QuickBooks Level 2 Certified"
+                  className="w-24 h-24 object-contain drop-shadow-sm"
+                />
+                <div>
+                  <div className="text-xs font-bold text-slate-900">QuickBooks Level 2</div>
+                  <div className="text-[10px] text-slate-500">Advanced Advisory Certified</div>
+                </div>
+                <a
+                  href="/intuit-quickbooks-certification-level-2.png"
+                  download="intuit-quickbooks-certification-level-2.png"
+                  className="w-full py-1.5 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#1E3F35] font-semibold text-[11px] flex items-center justify-center gap-1.5 transition-colors border border-emerald-200/80"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>Download (.PNG)</span>
+                </a>
+              </div>
+
+              {/* Badge 3: Workforce */}
+              <div className="p-4 rounded-xl bg-white border border-slate-200 flex flex-col items-center text-center space-y-3 shadow-2xs">
+                <img
+                  src="/quickbooks-workforce-certification.png"
+                  alt="QuickBooks Workforce Certified"
+                  className="w-24 h-24 object-contain drop-shadow-sm"
+                />
+                <div>
+                  <div className="text-xs font-bold text-slate-900">QuickBooks Workforce</div>
+                  <div className="text-[10px] text-slate-500">Payroll Specialist Certified</div>
+                </div>
+                <a
+                  href="/quickbooks-workforce-certification.png"
+                  download="quickbooks-workforce-certification.png"
+                  className="w-full py-1.5 px-3 rounded-lg bg-cyan-50 hover:bg-cyan-100 text-cyan-900 font-semibold text-[11px] flex items-center justify-center gap-1.5 transition-colors border border-cyan-200/80"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>Download (.PNG)</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Modal Footer */}

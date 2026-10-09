@@ -19,6 +19,7 @@ import { BrandAssetModal } from './components/BrandAssetModal';
 import { TaxCountdownBanner } from './components/TaxCountdownBanner';
 import { IRSQuickToolsSection } from './components/IRSQuickToolsSection';
 import { SpecializedSolutionsSection } from './components/SpecializedSolutionsSection';
+import { QuickBooksCertificationsSection } from './components/QuickBooksCertificationsSection';
 
 export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -103,7 +104,12 @@ export default function App() {
           onOpenBooking={(title) => handleOpenBooking(title)}
         />
 
-        {/* 4. Specialized Solutions (Cross-Border, Visas, Remote US Business) */}
+        {/* 4. Official Intuit QuickBooks ProAdvisor Certifications (Level 1, Level 2, Workforce) */}
+        <QuickBooksCertificationsSection
+          onOpenBooking={(title) => handleOpenBooking(title)}
+        />
+
+        {/* 5. Specialized Solutions (Cross-Border, Visas, Remote US Business) */}
         <SpecializedSolutionsSection
           onOpenBooking={(title) => handleOpenBooking(title)}
         />

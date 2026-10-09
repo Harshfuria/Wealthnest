@@ -184,6 +184,40 @@ export const PracticeAreas: React.FC<PracticeAreasProps> = ({ onOpenBooking }) =
                     {service.deliverables[0]}
                   </span>
                 </div>
+
+                {/* QuickBooks ProAdvisor Certified Accreditation Callout */}
+                {service.id === 'accounting-bookkeeping' && (
+                  <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/90 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center -space-x-2 shrink-0">
+                        <img src="/intuit-quickbooks-certification-level-1.png" alt="QuickBooks Level 1" className="w-7 h-7 object-contain" />
+                        <img src="/intuit-quickbooks-certification-level-2.png" alt="QuickBooks Level 2" className="w-8 h-8 object-contain scale-105 z-10" />
+                      </div>
+                      <div className="text-[11px] leading-tight">
+                        <span className="font-bold text-emerald-950 block">QuickBooks Level 1 & 2 Certified</span>
+                        <span className="text-emerald-700 text-[10px]">Intuit ProAdvisor Verified</span>
+                      </div>
+                    </div>
+                    <a href="#certifications" className="text-[10px] font-bold text-emerald-800 hover:underline">
+                      Badges →
+                    </a>
+                  </div>
+                )}
+
+                {service.id === 'payroll-compliance' && (
+                  <div className="p-2.5 rounded-xl bg-cyan-50/80 border border-cyan-200/90 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <img src="/quickbooks-workforce-certification.png" alt="Workforce Certified" className="w-7 h-7 object-contain shrink-0" />
+                      <div className="text-[11px] leading-tight">
+                        <span className="font-bold text-cyan-950 block">QuickBooks Workforce Certified</span>
+                        <span className="text-cyan-800 text-[10px]">Payroll & Portal Specialist</span>
+                      </div>
+                    </div>
+                    <a href="#certifications" className="text-[10px] font-bold text-cyan-800 hover:underline">
+                      Badges →
+                    </a>
+                  </div>
+                )}
               </div>
 
               {/* Bottom Card Actions */}

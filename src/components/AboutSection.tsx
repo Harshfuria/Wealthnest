@@ -136,9 +136,34 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                   <div className="w-5 h-5 rounded-full bg-emerald-800/80 flex items-center justify-center shrink-0 mt-0.5 text-amber-300">
                     ✓
                   </div>
-                  <span>
-                    <strong>QuickBooks & Xero Certified:</strong> Certified ProAdvisor practices utilizing modern, automated reconciliation workflows for real-time accuracy.
-                  </span>
+                  <div className="space-y-2">
+                    <span>
+                      <strong>Certified Intuit QuickBooks ProAdvisor:</strong> Officially accredited across Level 1, Level 2 (Advanced), and Workforce payroll automation.
+                    </span>
+                    <div className="flex items-center gap-2 pt-1">
+                      <a href="#certifications" title="QuickBooks Level 1 Certified">
+                        <img
+                          src="/intuit-quickbooks-certification-level-1.png"
+                          alt="QuickBooks Level 1 Certified"
+                          className="w-10 h-10 object-contain drop-shadow-sm hover:scale-110 transition-transform"
+                        />
+                      </a>
+                      <a href="#certifications" title="QuickBooks Level 2 Certified">
+                        <img
+                          src="/intuit-quickbooks-certification-level-2.png"
+                          alt="QuickBooks Level 2 Certified"
+                          className="w-10 h-10 object-contain drop-shadow-sm hover:scale-110 transition-transform"
+                        />
+                      </a>
+                      <a href="#certifications" title="QuickBooks Workforce Certified">
+                        <img
+                          src="/quickbooks-workforce-certification.png"
+                          alt="QuickBooks Workforce Certified"
+                          className="w-10 h-10 object-contain drop-shadow-sm hover:scale-110 transition-transform"
+                        />
+                      </a>
+                    </div>
+                  </div>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-emerald-800/80 flex items-center justify-center shrink-0 mt-0.5 text-amber-300">

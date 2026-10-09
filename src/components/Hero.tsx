@@ -120,8 +120,54 @@ export const Hero: React.FC<HeroProps> = ({
               <span className="hidden sm:inline text-slate-300">·</span>
               <span className="flex items-center gap-1.5 font-medium text-slate-900">
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#1E3F35]" />
-                <span>QuickBooks & Xero Certified</span>
+                <span>QuickBooks Certified ProAdvisor</span>
               </span>
+            </div>
+
+            {/* Official QuickBooks Certified ProAdvisor Badges Strip */}
+            <div className="p-3.5 rounded-2xl bg-white border border-emerald-200/90 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="flex items-center -space-x-2.5 shrink-0">
+                  <a href="#certifications" title="QuickBooks Level 1 Certified">
+                    <img
+                      src="/intuit-quickbooks-certification-level-1.png"
+                      alt="QuickBooks Level 1 Certified"
+                      className="w-11 h-11 object-contain drop-shadow-sm hover:scale-110 hover:z-30 transition-transform cursor-pointer"
+                    />
+                  </a>
+                  <a href="#certifications" title="QuickBooks Level 2 Certified">
+                    <img
+                      src="/intuit-quickbooks-certification-level-2.png"
+                      alt="QuickBooks Level 2 Certified"
+                      className="w-13 h-13 object-contain drop-shadow-md z-10 hover:scale-110 hover:z-30 transition-transform cursor-pointer scale-105"
+                    />
+                  </a>
+                  <a href="#certifications" title="QuickBooks Workforce Certified">
+                    <img
+                      src="/quickbooks-workforce-certification.png"
+                      alt="QuickBooks Workforce Certified"
+                      className="w-11 h-11 object-contain drop-shadow-sm hover:scale-110 hover:z-30 transition-transform cursor-pointer"
+                    />
+                  </a>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                    <Award className="w-3.5 h-3.5 text-emerald-800" />
+                    <span>Intuit QuickBooks Certified ProAdvisor</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    Certified in Level 1, Level 2 (Advanced) & Workforce Payroll
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href="#certifications"
+                className="text-xs font-bold text-[#1E3F35] hover:underline flex items-center gap-1 whitespace-nowrap self-end sm:self-center bg-emerald-50 hover:bg-emerald-100/80 px-3 py-1.5 rounded-lg border border-emerald-200/80 transition-colors"
+              >
+                <span>View Badges & Skills</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
             </div>
 
             {/* Primary Action Buttons */}

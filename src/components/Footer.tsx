@@ -209,6 +209,34 @@ export const Footer: React.FC<FooterProps> = ({
               <p>All client datasets encrypted via 256-bit AES protocols in our secure vault.</p>
               <p>QuickBooks ProAdvisor & Xero Certified Partner practices.</p>
               <p>IRS Circular 230 ethical representation guidelines strictly maintained.</p>
+              <div className="pt-2">
+                <span className="text-[10px] uppercase font-bold text-emerald-300 block mb-2">
+                  Verified Intuit ProAdvisor
+                </span>
+                <div className="flex items-center gap-2.5">
+                  <a href="#certifications" title="QuickBooks Level 1 Certified">
+                    <img
+                      src="/intuit-quickbooks-certification-level-1.png"
+                      alt="QuickBooks Level 1"
+                      className="w-9 h-9 object-contain hover:scale-110 transition-transform"
+                    />
+                  </a>
+                  <a href="#certifications" title="QuickBooks Level 2 Certified">
+                    <img
+                      src="/intuit-quickbooks-certification-level-2.png"
+                      alt="QuickBooks Level 2"
+                      className="w-10 h-10 object-contain hover:scale-110 transition-transform"
+                    />
+                  </a>
+                  <a href="#certifications" title="QuickBooks Workforce Certified">
+                    <img
+                      src="/quickbooks-workforce-certification.png"
+                      alt="QuickBooks Workforce"
+                      className="w-9 h-9 object-contain hover:scale-110 transition-transform"
+                    />
+                  </a>
+                </div>
+              </div>
               <p className="text-slate-400 text-[11px] pt-1">
                 Serving businesses in all 50 US states and international entities.
               </p>

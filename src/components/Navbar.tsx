@@ -89,6 +89,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               Services
             </a>
             <a
+              href="#certifications"
+              onClick={(e) => handleNavClick(e, 'certifications')}
+              className="hover:text-[#1E3F35] transition-colors flex items-center gap-1"
+            >
+              <span>QuickBooks</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </a>
+            <a
               href="#specializations"
               onClick={(e) => handleNavClick(e, 'specializations')}
               className="hover:text-[#1E3F35] transition-colors"
@@ -186,6 +194,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
             >
               Services & Accounting
+            </a>
+            <a
+              href="#certifications"
+              onClick={(e) => handleNavClick(e, 'certifications')}
+              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35] font-semibold text-emerald-800"
+            >
+              QuickBooks ProAdvisor Badges
             </a>
             <a
               href="#specializations"
