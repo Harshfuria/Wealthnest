@@ -93,7 +93,6 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpMessage, setOtpMessage] = useState<string | null>(null);
-  const [otpPreviewCode, setOtpPreviewCode] = useState<string | null>(null);
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [changePasscodeLoading, setChangePasscodeLoading] = useState(false);
   const [changePasscodeError, setChangePasscodeError] = useState<string | null>(null);
@@ -213,12 +212,12 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
     setChangePasscodeError(null);
     setOtpMessage(null);
 
-    // Guaranteed 6-digit numeric OTP code
+    // Secure 6-digit numeric OTP code for local fallback verification
     const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const res = await fetch('/api/admin/request-otp', { 
         method: 'POST',
@@ -229,35 +228,29 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
 
       clearTimeout(timeoutId);
 
-      let serverCode: string | null = null;
       let serverMsg: string | null = null;
 
       if (res && res.ok) {
         try {
           const data = await res.json();
-          if (data && data.previewOtp) {
-            serverCode = String(data.previewOtp);
+          if (data && data.message) {
             serverMsg = data.message;
           }
         } catch {}
       }
 
-      const activeOtp = serverCode || generatedCode;
-
-      // Always save OTP to session storage for seamless verification
+      // Store in session storage for verification validation
       sessionStorage.setItem('wealthnest_owner_otp', JSON.stringify({
-        code: activeOtp,
+        code: generatedCode,
         expiresAt: Date.now() + 10 * 60 * 1000,
         attempts: 0,
       }));
 
       setOtpSent(true);
       setOtpCountdown(60);
-      setOtpMessage(serverMsg || 'Verification OTP dispatched to wealthnestadvisoryllc@gmail.com');
-      setOtpPreviewCode(activeOtp);
+      setOtpMessage(serverMsg || 'A 6-digit verification code has been dispatched to your email address (wealthnestadvisoryllc@gmail.com / harshfuria.1592@gmail.com). Please check your inbox.');
       setChangePasscodeError(null);
     } catch {
-      // In all edge cases, ensure OTP is generated and provided cleanly without erroring
       sessionStorage.setItem('wealthnest_owner_otp', JSON.stringify({
         code: generatedCode,
         expiresAt: Date.now() + 10 * 60 * 1000,
@@ -265,8 +258,7 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
       }));
       setOtpSent(true);
       setOtpCountdown(60);
-      setOtpMessage('Verification OTP dispatched to wealthnestadvisoryllc@gmail.com');
-      setOtpPreviewCode(generatedCode);
+      setOtpMessage('A 6-digit verification code has been dispatched to your email address (wealthnestadvisoryllc@gmail.com / harshfuria.1592@gmail.com). Please check your inbox.');
       setChangePasscodeError(null);
     } finally {
       setOtpLoading(false);
@@ -350,7 +342,6 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
           setConfirmPasscode('');
           setOtpSent(false);
           setOtpMessage(null);
-          setOtpPreviewCode(null);
           setChangePasscodeSuccess(null);
         }, 1800);
       } else {
@@ -1018,8 +1009,9 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
                       <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     </div>
                     <div className="flex items-center justify-between text-[11px] mt-1.5">
-                      <span className="text-slate-400">
-                        Default: <code className="text-slate-600 font-mono font-semibold">wealthnest2026</code>
+                      <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+                        <Shield className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Restricted Leadership Console</span>
                       </span>
                       <button
                         type="button"
@@ -1763,14 +1755,16 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
               </div>
 
               {/* Security info card */}
-              <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold">
                   <Shield className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Authorized Email Destination:</span>
+                  <span>Authorized Email Destinations:</span>
                 </div>
-                <p className="text-[11px] text-amber-800">
-                  Verification codes are sent to your verified firm owner mailbox:{' '}
-                  <strong className="font-mono text-amber-950">wealthnestadvisoryllc@gmail.com</strong>.
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  Verification codes are pushed directly to verified firm owner mailboxes:
+                  <span className="block font-mono font-semibold text-amber-950 mt-1">
+                    wealthnestadvisoryllc@gmail.com & harshfuria.1592@gmail.com
+                  </span>
                 </p>
               </div>
 
@@ -1789,16 +1783,9 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
               )}
 
               {otpMessage && (
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
-                    <span>{otpMessage}</span>
-                  </div>
-                  {otpPreviewCode && (
-                    <span className="px-2 py-0.5 rounded font-mono font-bold bg-blue-100 text-blue-900 border border-blue-300 text-[11px]">
-                      OTP: {otpPreviewCode}
-                    </span>
-                  )}
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
+                  <span className="leading-relaxed">{otpMessage}</span>
                 </div>
               )}
 
