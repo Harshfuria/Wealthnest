@@ -19,7 +19,7 @@ export const ADVISORY_STATS = [
   { value: '100%', label: 'Secure Client Vault', subtext: 'Bank-grade client confidentiality' },
 ];
 
-export const CPA_STATS = ADVISORY_STATS;
+export const FIRM_STATS = ADVISORY_STATS;
 export const STATS = ADVISORY_STATS;
 
 export const SERVICES: ServiceItem[] = [

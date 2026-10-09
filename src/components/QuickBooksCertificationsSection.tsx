@@ -4,8 +4,6 @@ import {
   CheckCircle2, 
   ShieldCheck, 
   ArrowRight, 
-  Download, 
-  ExternalLink, 
   Sparkles,
   Zap,
   Clock,
@@ -181,15 +179,10 @@ export const QuickBooksCertificationsSection: React.FC<QuickBooksCertificationsS
 
               {/* Card Action Footer */}
               <div className="relative z-10 pt-6 mt-6 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                <a
-                  href={cert.badgeImg}
-                  download
-                  className="inline-flex items-center gap-1.5 text-slate-600 hover:text-[#1E3F35] font-semibold transition-colors"
-                  title="Download Official Badge PNG"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Badge</span>
-                </a>
+                <div className="inline-flex items-center gap-1.5 text-slate-500 font-medium">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Verified Credential</span>
+                </div>
 
                 <button
                   onClick={() => onOpenBooking(`${cert.title} Consultation`)}
@@ -301,17 +294,13 @@ export const QuickBooksCertificationsSection: React.FC<QuickBooksCertificationsS
             </div>
 
             <div className="flex items-center justify-center gap-3 pt-2">
-              <a
-                href={selectedBadge}
-                download
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] transition-all flex items-center gap-2 shadow-sm"
-              >
-                <Download className="w-4 h-4 text-amber-300" />
-                <span>Download High-Res Badge (.PNG)</span>
-              </a>
+              <div className="inline-flex items-center gap-1.5 text-xs text-emerald-800 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 font-semibold">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Verified Intuit ProAdvisor Credential</span>
+              </div>
               <button
                 onClick={() => setSelectedBadge(null)}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 Close
               </button>

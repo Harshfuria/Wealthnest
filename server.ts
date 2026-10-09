@@ -37,7 +37,7 @@ Format key insights with markdown bullet points and concise paragraphs. Avoid ge
     return `${basePrompt}\n\nSPECIALIZED FOCUS: Fractional Chief Financial Officer (CFO). Focus heavily on 13-week rolling cash forecasts, working capital runway, EBITDA improvements, debt restructuring, borrowing base management, and executive board reporting.`;
   }
   if (role === 'tax') {
-    return `${basePrompt}\n\nSPECIALIZED FOCUS: Tax Strategist & CPA Specialist. Focus on federal and state tax compliance, IRS deadlines, deduction optimization (Section 179, bonus depreciation), S-Corp reasonable compensation, and multi-state economic nexus rules.`;
+    return `${basePrompt}\n\nSPECIALIZED FOCUS: Tax Strategist & Advisory Specialist. Focus on federal and state tax compliance, IRS deadlines, deduction optimization (Section 179, bonus depreciation), S-Corp reasonable compensation, and multi-state economic nexus rules.`;
   }
   if (role === 'capital') {
     return `${basePrompt}\n\nSPECIALIZED FOCUS: Commercial Financing & AR Recovery Underwriter. Focus on Asset-Based Lending (ABL), invoice factoring mechanics (advance rates, discount fees, verification), hard money lending / bridge capital, and diplomatic aging AR recovery protocols.`;
@@ -249,7 +249,7 @@ const readClients = (): any[] => {
           email: 'm.vance@apexlogistics.com',
           password: 'Password123!',
           entityType: 'Delaware S-Corporation',
-          advisor: 'Harsh Furia, CPA',
+          advisor: 'Harsh Furia (Managing Partner)',
           status: 'Active Client Account',
           service: 'Virtual CFO Advisory',
           createdAt: new Date().toISOString(),
@@ -314,8 +314,8 @@ app.post('/api/admin/verify', (req, res) => {
   });
 });
 
-// 2b. Request Email OTP to Change Master Passcode
-app.post('/api/admin/request-otp', (_req, res) => {
+// 2b. Request Email OTP to Change Master Passcode (supports POST, GET, OPTIONS)
+app.all('/api/admin/request-otp', (_req, res) => {
   try {
     // Generate secure 6-digit numeric OTP
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -439,7 +439,7 @@ app.post('/api/clients/register', (req, res) => {
       phone: phone ? String(phone).trim() : '',
       company: company ? String(company).trim() : 'Private Entity',
       entityType: 'Commercial Business Account',
-      advisor: 'Harsh Furia, CPA',
+      advisor: 'Harsh Furia (Managing Partner)',
       status: 'Onboarding / Active Account',
       service: service || 'Advisory Services',
       createdAt: new Date().toISOString(),
