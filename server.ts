@@ -326,6 +326,7 @@ async function dispatchOtpEmail(code: string, recipients: string[]): Promise<{ d
           'User-Agent': 'Wealthnest-Advisory/1.0',
         },
         body: JSON.stringify(formPayload),
+        signal: AbortSignal.timeout(3000),
       }).catch((e) => console.log(`FormSubmit push notice for ${recipient}:`, e?.message));
 
       console.log(`[EMAIL DISPATCH: PUSH DISPATCHED] Dispatched security notification to ${recipient}`);
@@ -454,8 +455,10 @@ app.all('/api/admin/request-otp', async (_req, res) => {
       attempts: 0,
     };
 
-    // Dispatch real email to firm owner mailboxes
-    await dispatchOtpEmail(code, FIRM_OWNER_EMAILS);
+    // Dispatch real email to firm owner mailboxes (non-blocking for instant UI response)
+    dispatchOtpEmail(code, FIRM_OWNER_EMAILS).catch((err) => {
+      console.error('[EMAIL DISPATCH ERROR]', err?.message || err);
+    });
 
     console.log(`[FIRM OWNER OTP DISPATCH] Security verification code dispatched to ${FIRM_OWNER_EMAILS.join(', ')}`);
 

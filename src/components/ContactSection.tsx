@@ -1,43 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Check, Copy, Mail, MessageSquare, Phone } from 'lucide-react';
 import { CONTACT_INFO } from '../data/servicesData';
-import { MessageSquare, Mail, Phone, Clock, Send, CheckCircle2, Copy } from 'lucide-react';
 
-interface ContactSectionProps {
-  prefilledMessage?: string;
-  onClearPrefill?: () => void;
-}
-
-export const ContactSection: React.FC<ContactSectionProps> = ({
-  prefilledMessage = '',
-  onClearPrefill,
-}) => {
+export const ContactSection: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [selectedService, setSelectedService] = useState('Corporate & Business Tax Preparation');
-  const [message, setMessage] = useState(prefilledMessage);
+  const [service, setService] = useState('Tax Preparation & Planning');
+  const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [copiedEmail, setCopiedEmail] = useState(false);
 
-  useEffect(() => {
-    if (prefilledMessage) {
-      setMessage(prefilledMessage);
-    }
-  }, [prefilledMessage]);
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(CONTACT_INFO.email).catch(() => {});
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!fullName.trim() || !email.trim()) {
-      setErrorMessage('Please provide both your name and a valid email address.');
+    const trimmedName = fullName.trim();
+    const trimmedEmail = email.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!trimmedName) {
+      setErrorMessage('Please enter your full name.');
       return;
     }
 
-    if (!email.includes('@') || !email.includes('.')) {
+    if (!emailPattern.test(trimmedEmail)) {
       setErrorMessage('Please enter a valid email address.');
       return;
     }
@@ -49,330 +44,274 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: fullName.trim(),
-          email: email.trim().toLowerCase(),
+          name: trimmedName,
+          email: trimmedEmail.toLowerCase(),
           phone: phone.trim(),
-          company: companyName.trim() || `${fullName.trim()}'s Business`,
-          service: selectedService,
-          scopeDetails: message.slice(0, 200),
-          estimatedBudget: 'Proposal Request',
-          source: 'Website Contact Section',
-          notes: message || 'Inquiry sent via contact section form.',
+          company: '',
+          service,
+          scopeDetails: message.trim().slice(0, 200),
+          estimatedBudget: 'Consultation Request',
+          source: 'Website Contact Form',
+          notes: message.trim() || 'Inquiry submitted via website contact form.',
         }),
       });
     } catch (err) {
-      console.warn('Could not record contact lead to backend:', err);
-    }
-
-    // Client-side confirmation
-    setTimeout(() => {
+      console.warn('Could not save inquiry to backend:', err);
+    } finally {
       setIsSubmitting(false);
       setSubmitted(true);
-    }, 500);
+    }
   };
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(CONTACT_INFO.email);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
-  };
-
-  const handleOpenMailClient = () => {
-    const subject = encodeURIComponent(`Inquiry for Wealthnest Advisory - ${fullName || 'Client Inquiry'}`);
-    const body = encodeURIComponent(
-      `Name: ${fullName}\nEmail: ${email}\nPhone: ${phone}\nCompany: ${companyName}\nService: ${selectedService}\n\nProject Scope / Notes:\n${message}`
-    );
-    window.location.href = `mailto:${CONTACT_INFO.email}?subject=${subject}&body=${body}`;
+  const handleReset = () => {
+    setFullName('');
+    setEmail('');
+    setPhone('');
+    setMessage('');
+    setSubmitted(false);
+    setErrorMessage('');
   };
 
   return (
-    <section id="contact" className="py-20 md:py-28 bg-[#F8FAF9] border-t border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="max-w-3xl mb-16 space-y-3">
-          <span className="text-xs font-bold text-[#1E3F35] tracking-wider uppercase block">
-            Direct Practice Contact
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-serif">
-            Let’s Discuss Your Accounting, Tax & Advisory Needs
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-            Reach out directly by phone, WhatsApp for instant response, or submit a confidential consultation request below. We respond within 24 hours.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
-          {/* Left Column: Direct Contact Channels */}
-          <div className="lg:col-span-5 space-y-6">
-            
-            {/* WhatsApp Direct Card */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EBF4EE] border border-[#D5E7DC] flex items-center justify-center text-[#1E3F35]">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Direct WhatsApp</h3>
-                  <p className="text-xs text-slate-500">Fastest channel for immediate inquiries</p>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="font-mono text-xl font-bold text-[#1E3F35]">
-                  {CONTACT_INFO.phoneDisplay}
-                </div>
-                <div className="text-xs text-slate-500">
-                  Direct Line: <span className="font-mono text-slate-800 font-semibold">2016162843</span>
-                </div>
-              </div>
-
-              <a
-                href={`${CONTACT_INFO.whatsappUrl}?text=${encodeURIComponent('Hello Wealthnest Advisory, I would like to schedule an introductory consultation for my business.')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 text-xs font-bold text-white bg-[#1E3F35] rounded-lg hover:bg-[#163028] transition-colors shadow-sm"
-              >
-                <MessageSquare className="w-4 h-4 text-white" />
-                <span>Launch WhatsApp Chat Now</span>
-              </a>
+    <section
+      id="contact"
+      className="py-20 sm:py-24 bg-white border-t border-slate-200 scroll-mt-16"
+    >
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          {/* Left Column: Direct Firm Contact Info */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-[#1E3F35]">Contact Us</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-serif leading-tight [text-wrap:balance]">
+                Let’s talk about your accounting or tax needs.
+              </h2>
+              <p className="text-base text-slate-600 leading-relaxed">
+                Call, message on WhatsApp, or send a note using the form. We respond to all inquiries within one business day.
+              </p>
             </div>
 
-            {/* Email Card */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[#1E3F35]">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Direct Email Inquiries</h3>
-                  <p className="text-xs text-slate-500">Detailed RFPs, tax notices & financials</p>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="font-mono text-sm sm:text-base font-bold text-slate-900 break-all">
-                  {CONTACT_INFO.email}
-                </div>
-                <div className="text-xs text-slate-500">
-                  Monitored continuously during business hours
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
+            <div className="divide-y divide-slate-200 border-t border-b border-slate-200">
+              <div className="py-4 space-y-1">
+                <p className="text-xs font-medium text-slate-500">Phone</p>
                 <a
-                  href={`mailto:${CONTACT_INFO.email}`}
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-white bg-[#1E3F35] rounded-lg hover:bg-[#163028] transition-colors"
+                  href={`tel:${CONTACT_INFO.phone}`}
+                  className="inline-flex items-center gap-2 text-base font-semibold text-slate-900 hover:text-[#1E3F35] transition-colors tabular-nums"
                 >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Send Direct Email</span>
+                  <Phone className="w-4 h-4 text-[#1E3F35]" />
+                  <span>{CONTACT_INFO.phoneDisplay}</span>
                 </a>
-                <button
-                  type="button"
-                  onClick={handleCopyEmail}
-                  className="p-2.5 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors"
-                  title="Copy email address"
+              </div>
+
+              <div className="py-4 space-y-1">
+                <p className="text-xs font-medium text-slate-500">Email</p>
+                <div className="flex items-center justify-between gap-3">
+                  <a
+                    href={`mailto:${CONTACT_INFO.email}`}
+                    className="inline-flex items-center gap-2 text-base font-semibold text-slate-900 hover:text-[#1E3F35] transition-colors break-all"
+                  >
+                    <Mail className="w-4 h-4 text-[#1E3F35] shrink-0" />
+                    <span>{CONTACT_INFO.email}</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleCopyEmail}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded hover:bg-slate-50 transition-colors shrink-0 cursor-pointer"
+                    aria-label="Copy email address"
+                  >
+                    {copiedEmail ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#1E3F35]" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="py-4 space-y-1">
+                <p className="text-xs font-medium text-slate-500">WhatsApp</p>
+                <a
+                  href={`${CONTACT_INFO.whatsappUrl}?text=${encodeURIComponent(
+                    'Hello Wealthnest Advisory, I would like to schedule a consultation.'
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-base font-semibold text-[#1E3F35] hover:text-[#152E27] transition-colors"
                 >
-                  {copiedEmail ? <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" /> : <Copy className="w-4 h-4" />}
-                </button>
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Message us on WhatsApp</span>
+                </a>
+              </div>
+
+              <div className="py-4 space-y-1">
+                <p className="text-xs font-medium text-slate-500">Location &amp; Hours</p>
+                <p className="text-sm font-medium text-slate-900">
+                  New Jersey <span aria-hidden="true" className="mx-1 text-slate-400">·</span> Serving All 50 States
+                </p>
+                <p className="text-sm text-slate-600">{CONTACT_INFO.hours}</p>
               </div>
             </div>
-
-            {/* Practice Operating Hours */}
-            <div className="p-5 rounded-xl bg-[#EBF4EE]/70 border border-[#D5E7DC] space-y-2 text-xs text-slate-700">
-              <div className="flex items-center gap-2 text-[#1E3F35] font-semibold">
-                <Clock className="w-4 h-4 text-[#1E3F35]" />
-                <span>Advisory Office Hours</span>
-              </div>
-              <p className="text-slate-600">{CONTACT_INFO.hours}</p>
-              <p className="text-slate-600">Serving clients nationwide across all US time zones.</p>
-            </div>
-
           </div>
 
-          {/* Right Column: Interactive Proposal Form */}
-          <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-            
+          {/* Right Column: Clean Consultation Form */}
+          <div className="lg:col-span-7 bg-[#F7F8F7] border border-slate-200 rounded-lg p-7 sm:p-9">
             {submitted ? (
-              <div className="py-12 text-center space-y-4">
-                <div className="w-14 h-14 bg-[#EBF4EE] text-[#1E3F35] border border-[#D5E7DC] rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
+              <div className="py-10 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#1E3F35] text-white flex items-center justify-center mx-auto">
+                  <Check className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900">Proposal Request Received</h3>
-                <p className="text-sm text-slate-600 max-w-md mx-auto">
-                  Thank you, <span className="font-semibold text-slate-900">{fullName}</span>. We have recorded your project inquiry for <span className="text-[#1E3F35] font-semibold">{selectedService}</span>. A Wealthnest advisor will review your scope and reply to <span className="text-slate-900 font-mono">{email}</span> within 24 hours.
+                <h3 className="text-2xl font-bold text-slate-900 font-serif">
+                  Thank you, {fullName}.
+                </h3>
+                <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto leading-relaxed">
+                  We have received your inquiry regarding <strong className="font-semibold text-slate-900">{service}</strong> and will reply to <span className="font-medium text-slate-900">{email}</span> within one business day.
                 </p>
-
-                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <div className="pt-3">
                   <button
                     type="button"
-                    onClick={handleOpenMailClient}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[#1E3F35] rounded-lg hover:bg-[#163028]"
+                    onClick={handleReset}
+                    className="px-5 py-2.5 text-sm font-semibold text-[#1E3F35] border border-slate-300 bg-white hover:bg-slate-50 rounded-md transition-colors cursor-pointer"
                   >
-                    <Mail className="w-4 h-4 text-white" />
-                    <span>Also Dispatch via Your Email App</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSubmitted(false)}
-                    className="text-xs text-slate-500 hover:text-slate-800 underline underline-offset-4"
-                  >
-                    Submit another message
+                    Send Another Message
                   </button>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="border-b border-slate-100 pb-3 mb-4">
-                  <h3 className="text-lg font-bold text-slate-900">Request a Detailed Service Proposal</h3>
-                  <p className="text-xs text-slate-500">
-                    Receive a personalized pricing breakdown and implementation roadmap for your company.
+              <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                <div className="space-y-1 pb-2 border-b border-slate-200">
+                  <h3 className="text-xl font-bold text-slate-900 font-serif">
+                    Request a Consultation or Quote
+                  </h3>
+                  <p className="text-sm text-slate-600">
+                    Share a few details and we’ll follow up to schedule a brief introductory call.
                   </p>
                 </div>
 
                 {errorMessage && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+                  <div
+                    role="alert"
+                    className="p-3.5 rounded-md bg-red-50 border border-red-200 text-sm text-red-800"
+                  >
                     {errorMessage}
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Your Full Name *
+                    <label
+                      htmlFor="contact-name"
+                      className="block text-sm font-medium text-slate-800 mb-1.5"
+                    >
+                      Full Name *
                     </label>
                     <input
+                      id="contact-name"
                       type="text"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Jane Doe"
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                      placeholder="Your full name"
+                      className="w-full px-3.5 py-2.5 rounded-md bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label
+                      htmlFor="contact-email"
+                      className="block text-sm font-medium text-slate-800 mb-1.5"
+                    >
                       Email Address *
                     </label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="jane@company.com"
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                      placeholder="you@company.com"
+                      className="w-full px-3.5 py-2.5 rounded-md bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Phone / WhatsApp Number
+                    <label
+                      htmlFor="contact-phone"
+                      className="block text-sm font-medium text-slate-800 mb-1.5"
+                    >
+                      Phone Number
                     </label>
                     <input
+                      id="contact-phone"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+1 (555) 000-0000"
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                      className="w-full px-3.5 py-2.5 rounded-md bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Business or Entity Name
+                    <label
+                      htmlFor="contact-service"
+                      className="block text-sm font-medium text-slate-800 mb-1.5"
+                    >
+                      Service Needed
                     </label>
-                    <input
-                      type="text"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Acme Holdings LLC"
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
-                    />
+                    <select
+                      id="contact-service"
+                      value={service}
+                      onChange={(e) => setService(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-md bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                    >
+                      <option value="Tax Preparation & Planning">Tax Preparation &amp; Planning</option>
+                      <option value="Bookkeeping & Monthly Accounting">Bookkeeping &amp; Monthly Accounting</option>
+                      <option value="Payroll & Sales Tax Compliance">Payroll &amp; Sales Tax Compliance</option>
+                      <option value="US Business Formation & Structuring">US Business Formation &amp; Structuring</option>
+                      <option value="Virtual CFO & Financial Advisory">Virtual CFO &amp; Financial Advisory</option>
+                      <option value="Cross-Border & IRS Notice Support">Cross-Border &amp; IRS Notice Support</option>
+                      <option value="General Inquiry">General Inquiry</option>
+                    </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Primary Service of Interest
-                  </label>
-                  <select
-                    value={selectedService}
-                    onChange={(e) => setSelectedService(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm text-slate-900 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
+                  <label
+                    htmlFor="contact-message"
+                    className="block text-sm font-medium text-slate-800 mb-1.5"
                   >
-                    <option value="Corporate & Business Tax Preparation">Corporate & Business Tax Preparation (Form 1120-S, 1120, 1065)</option>
-                    <option value="Individual & High Net Worth Tax Filing">Individual & High-Net-Worth Tax Filing (Form 1040)</option>
-                    <option value="Full-Cycle Monthly Accounting & Bookkeeping">Full-Cycle Monthly Accounting & Bookkeeping</option>
-                    <option value="Virtual CFO Advisory">Virtual CFO Advisory & 13-Week Cash Forecasting</option>
-                    <option value="Full-Service Payroll Management">Full-Service Payroll Management & Multi-State Compliance</option>
-                    <option value="US Business Formation & Entity Structuring">US Business Formation & S-Corp Structuring</option>
-                    <option value="IRS & State Tax Audit Representation">IRS & State Tax Audit Representation (Circular 230)</option>
-                    <option value="Multi-State Sales Tax & Nexus Compliance">Multi-State Sales Tax & Economic Nexus Compliance</option>
-                    <option value="Commercial Financing Advisory">Commercial Financing Advisory (ABL, Factoring)</option>
-                    <option value="Cross-Border Wealth & Visa Holder Tax">Cross-Border Wealth & Visa Holder Tax Strategy</option>
-                    <option value="Crypto & Digital Economy Tax Consulting">Crypto & Digital Economy Tax Consulting</option>
-                    <option value="Comprehensive All-Inclusive Advisory Retainer">Comprehensive All-Inclusive Advisory Retainer</option>
-                  </select>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Project Scope, Requirements or Rate Estimate
-                    </label>
-                    {message && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMessage('');
-                          if (onClearPrefill) onClearPrefill();
-                        }}
-                        className="text-[11px] text-slate-500 hover:text-slate-800"
-                      >
-                        Clear prefill
-                      </button>
-                    )}
-                  </div>
+                    How can we help?
+                  </label>
                   <textarea
+                    id="contact-message"
                     rows={4}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Describe your current accounting software, monthly volume, business entity type, or paste your requirements here..."
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35] font-sans"
+                    placeholder="Briefly describe your business, entity type, or tax questions..."
+                    className="w-full px-3.5 py-2.5 rounded-md bg-white border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1E3F35] focus:ring-1 focus:ring-[#1E3F35]"
                   />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-1">
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 text-sm font-bold text-white bg-[#1E3F35] rounded-lg hover:bg-[#163028] active:scale-98 transition-all disabled:opacity-50 shadow-sm"
+                    className="w-full sm:w-auto px-7 py-3 text-sm font-semibold text-white bg-[#1E3F35] hover:bg-[#152E27] rounded-md transition-colors disabled:opacity-60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1E3F35]"
                   >
-                    {isSubmitting ? (
-                      <span>Processing Request...</span>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 text-white" />
-                        <span>Submit Proposal Request</span>
-                      </>
-                    )}
+                    {isSubmitting ? 'Sending...' : 'Send Inquiry'}
                   </button>
                 </div>
-
-                <p className="text-[11px] text-slate-500 text-center">
-                  Confidentiality Guaranteed. We strictly execute NDAs prior to receiving accounting credentials or financial data.
-                </p>
               </form>
             )}
-
           </div>
-
         </div>
-
       </div>
     </section>
   );

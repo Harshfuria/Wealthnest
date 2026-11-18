@@ -1,191 +1,166 @@
-import React from 'react';
-import { Shield, CheckCircle2, ArrowRight, Award, Users, Lock, Sparkles, Scale } from 'lucide-react';
-import { CONTACT_INFO } from '../data/servicesData';
+import React, { useState } from 'react';
+import aboutWorkspaceImg from '../assets/images/about_advisor_workspace_1795040947256.jpg';
 
 interface AboutSectionProps {
-  onOpenBooking: () => void;
-  onOpenClientPortal: () => void;
+  onOpenBooking: (topic?: string) => void;
 }
 
-export const AboutSection: React.FC<AboutSectionProps> = ({
-  onOpenBooking,
-  onOpenClientPortal,
-}) => {
+const CERTIFICATIONS = [
+  {
+    title: 'QuickBooks Online Level 1',
+    subtitle: 'Intuit Certified ProAdvisor',
+    description:
+      'Verified proficiency in company setup, bank feeds, reconciliations, and day-to-day cloud accounting.',
+    badgeImg: '/intuit-quickbooks-certification-level-1.png',
+  },
+  {
+    title: 'QuickBooks Online Level 2',
+    subtitle: 'Advanced Certified ProAdvisor',
+    description:
+      'Advanced mastery of multi-entity workflows, inventory tracking, custom reporting, and troubleshooting.',
+    badgeImg: '/intuit-quickbooks-certification-level-2.png',
+  },
+  {
+    title: 'QuickBooks Payroll & Workforce',
+    subtitle: 'Certified Payroll Specialist',
+    description:
+      'Specialized training in automated payroll runs, multi-state tax filings, and W-2/1099 administration.',
+    badgeImg: '/quickbooks-workforce-certification.png',
+  },
+];
+
+const INDUSTRIES = [
+  'Small & Mid-Sized Businesses',
+  'E-Commerce & Retail Brands',
+  'Healthcare & Medical Practices',
+  'Real Estate & Property Investors',
+  'Technology & Consulting Firms',
+  'Cross-Border & Global Founders',
+];
+
+export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenBooking }) => {
+  const [imgError, setImgError] = useState(false);
+
   return (
-    <section id="about" className="py-20 md:py-28 bg-white border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="max-w-3xl space-y-3 mb-16">
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1E3F35]">
-            <Award className="w-3.5 h-3.5 text-amber-600" />
-            <span>About Wealthnest Advisory LLC</span>
+    <section id="about" className="py-20 sm:py-24 bg-white border-t border-slate-200">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Firm Overview Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-stretch">
+          {/* Left: Workspace Photo */}
+          <div className="lg:col-span-5">
+            <div className="w-full h-full min-h-[280px] sm:min-h-[340px] rounded-lg overflow-hidden border border-slate-200 bg-[#F4F6F5]">
+              {!imgError ? (
+                <img
+                  src={aboutWorkspaceImg}
+                  alt="Wealthnest Advisory workspace in New Jersey"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center p-8 text-center">
+                  <p className="font-serif text-lg font-bold text-[#1E3F35]">
+                    Wealthnest Advisory LLC
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-serif leading-tight">
-            A Strategic Accounting & Business Advisory Practice Built on Precision, Trust & Real Relationships
-          </h2>
-          <p className="text-base text-slate-600 leading-relaxed">
-            We are a full-service strategic accounting, tax planning, and business advisory firm based in Jersey City, New Jersey, serving clients nationwide across all 50 states. We bridge the gap between traditional accounting rigor and modern, cloud-first financial agility.
-          </p>
+
+          {/* Right: Firm Story */}
+          <div className="lg:col-span-7 flex flex-col justify-center space-y-6">
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-[#1E3F35]">About Wealthnest Advisory LLC</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-serif leading-tight [text-wrap:balance]">
+                A straightforward practice built on trust, precision, and real relationships.
+              </h2>
+            </div>
+
+            <div className="space-y-4 text-base text-slate-600 leading-relaxed">
+              <p>
+                We are a full-service strategic accounting, tax planning, and business advisory firm based in New Jersey, serving clients nationwide across all 50 states. We bridge the gap between traditional accounting rigor and modern, cloud-first financial agility.
+              </p>
+              <p>
+                Many accounting firms only reach out when tax deadlines arrive. We work alongside our clients throughout the year—keeping books clean every month, reviewing tax positions ahead of year-end, and answering your questions directly without layers of bureaucracy.
+              </p>
+            </div>
+
+            {/* Who We Serve & How We Work */}
+            <div className="pt-6 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <h3 className="text-base font-bold text-slate-900">Who We Serve</h3>
+                <ul className="space-y-1.5 text-sm text-slate-600">
+                  {INDUSTRIES.map((industry) => (
+                    <li key={industry}>{industry}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base font-bold text-slate-900">How We Work</h3>
+                <ul className="space-y-2 text-sm text-slate-600 leading-relaxed">
+                  <li>
+                    <strong className="font-semibold text-slate-800">Direct communication:</strong>{' '}
+                    Speak directly with your advisor by phone, email, or video call.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-slate-800">Cloud accounting:</strong>{' '}
+                    Seamless integration with QuickBooks Online, Xero, Gusto, and ADP.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-slate-800">Upfront proposals:</strong>{' '}
+                    Clear deliverables and fixed monthly or project fees.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Narrative & Value Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Left: Our Philosophy & Story */}
-          <div className="lg:col-span-7 space-y-6 text-slate-700 leading-relaxed text-sm sm:text-base">
-            <p>
-              At <strong>Wealthnest Advisory</strong>, we believe every business owner, startup founder, and high-net-worth family deserves proactive, partner-level financial leadership. Traditional accounting firms often treat clients like once-a-year tax numbers, reaching out only when deadlines loom in April.
-            </p>
-            <p>
-              We take a radically different approach: <strong>continuous, year-round strategic partnership</strong>. We actively monitor your cash flow, analyze multi-state tax exposures, review quarterly distributions, and structure your corporate entity to legally minimize liabilities before the year closes.
-            </p>
-
-            {/* Key Firm Principles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-              <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1 font-serif">
-                  <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" />
-                  <span>Partner-Led Involvement</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-normal">
-                  You work directly with seasoned tax strategists, enrolled advisors, and senior financial directors. No junior handoffs or opaque communication.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1 font-serif">
-                  <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" />
-                  <span>Proactive Tax Shield</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-normal">
-                  Quarterly strategy sessions and projected voucher adjustments to prevent unexpected IRS penalties.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1 font-serif">
-                  <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" />
-                  <span>50-State Practice Reach</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-normal">
-                  Seamless multi-state tax returns, economic nexus compliance, and foreign corporate registrations nationwide.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F8FAF9] border border-slate-200">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1 font-serif">
-                  <CheckCircle2 className="w-4 h-4 text-[#1E3F35]" />
-                  <span>256-Bit Encrypted Vault</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-normal">
-                  Bank-grade digital portal ensuring your confidential tax files and identity documents remain private.
-                </p>
-              </div>
+        {/* Official Intuit QuickBooks Certifications (No Download Buttons) */}
+        <div id="certifications" className="mt-20 pt-16 border-t border-slate-200 scroll-mt-24">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+            <div className="max-w-2xl space-y-2">
+              <p className="text-sm font-medium text-[#1E3F35]">Credentials</p>
+              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-serif">
+                Certified Intuit QuickBooks ProAdvisors
+              </h3>
+              <p className="text-sm sm:text-base text-slate-600">
+                Our team holds verified Intuit certifications across bookkeeping, advanced cloud accounting, and payroll management.
+              </p>
             </div>
-
-            <div className="pt-2 flex items-center gap-4">
-              <button
-                onClick={onOpenBooking}
-                className="px-5 py-3 text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-              >
-                <span>Schedule a Discovery Call</span>
-                <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
-              </button>
-
-              <button
-                onClick={onOpenClientPortal}
-                className="px-4 py-3 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <Lock className="w-3.5 h-3.5 text-[#1E3F35]" />
-                <span>Client Portal Access</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => onOpenBooking('QuickBooks Setup or Cleanup')}
+              className="text-sm font-semibold text-[#1E3F35] hover:text-[#152E27] underline underline-offset-4 decoration-[#1E3F35]/40 hover:decoration-[#1E3F35] whitespace-nowrap shrink-0 self-start md:self-auto cursor-pointer"
+            >
+              Need QuickBooks setup or cleanup?
+            </button>
           </div>
 
-          {/* Right: Institutional Credentials & Quality Assurances */}
-          <div className="lg:col-span-5 space-y-5">
-            <div className="p-6 rounded-2xl bg-[#0F261E] text-white border border-emerald-950 shadow-xl space-y-6">
-              <div className="space-y-1">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-300">
-                  Professional Practice Standards
-                </span>
-                <h3 className="text-xl font-bold font-serif text-white">
-                  Our Professional Pledge
-                </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {CERTIFICATIONS.map((cert) => (
+              <div
+                key={cert.title}
+                className="p-6 rounded-lg border border-slate-200 bg-[#F7F8F7] flex flex-col items-center text-center space-y-4"
+              >
+                <div className="h-28 flex items-center justify-center">
+                  <img
+                    src={cert.badgeImg}
+                    alt={cert.title}
+                    className="max-h-24 w-auto object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-[#1E3F35]">{cert.subtitle}</p>
+                  <h4 className="text-base font-bold text-slate-900 font-serif">{cert.title}</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed">{cert.description}</p>
+                </div>
               </div>
-
-              <ul className="space-y-3.5 text-xs text-emerald-100/90 leading-relaxed">
-                <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-800/80 flex items-center justify-center shrink-0 mt-0.5 text-amber-300">
-                    ✓
-                  </div>
-                  <span>
-                    <strong>IRS Circular 230 Standards:</strong> Strict adherence to ethical federal tax representation rules, ensuring lawful advocacy and transparent client disclosures.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-800/80 flex items-center justify-center shrink-0 mt-0.5 text-amber-300">
-                    ✓
-                  </div>
-                  <span>
-                    <strong>Bilateral Confidentiality & NDA:</strong> Every client relationship is governed by comprehensive non-disclosure protections from day one.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-800/80 flex items-center justify-center shrink-0 mt-0.5 text-amber-300">
-                    ✓
-                  </div>
-                  <div className="space-y-2">
-                    <span>
-                      <strong>Certified Intuit QuickBooks ProAdvisor:</strong> Officially accredited across Level 1, Level 2 (Advanced), and Workforce payroll automation.
-                    </span>
-                    <div className="flex items-center gap-2 pt-1">
-                      <a href="#certifications" title="QuickBooks Level 1 Certified">
-                        <img
-                          src="/intuit-quickbooks-certification-level-1.png"
-                          alt="QuickBooks Level 1 Certified"
-                          className="w-10 h-10 object-contain drop-shadow-sm hover:scale-110 transition-transform"
-                        />
-                      </a>
-                      <a href="#certifications" title="QuickBooks Level 2 Certified">
-                        <img
-                          src="/intuit-quickbooks-certification-level-2.png"
-                          alt="QuickBooks Level 2 Certified"
-                          className="w-10 h-10 object-contain drop-shadow-sm hover:scale-110 transition-transform"
-                        />
-                      </a>
-                      <a href="#certifications" title="QuickBooks Workforce Certified">
-                        <img
-                          src="/quickbooks-workforce-certification.png"
-                          alt="QuickBooks Workforce Certified"
-                          className="w-10 h-10 object-contain drop-shadow-sm hover:scale-110 transition-transform"
-                        />
-                      </a>
-                    </div>
-                  </div>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-800/80 flex items-center justify-center shrink-0 mt-0.5 text-amber-300">
-                    ✓
-                  </div>
-                  <span>
-                    <strong>Zero-Penalty Guarantee:</strong> We stand behind the timeliness and filing accuracy of our managed payroll and tax returns.
-                  </span>
-                </li>
-              </ul>
-
-              <div className="pt-2 border-t border-emerald-800/60 flex items-center justify-between text-[11px] text-emerald-300/80 font-mono">
-                <span>Direct Contact:</span>
-                <a href={`tel:${CONTACT_INFO.phone}`} className="text-amber-300 hover:underline">
-                  {CONTACT_INFO.phoneDisplay}
-                </a>
-              </div>
-            </div>
+            ))}
           </div>
-
         </div>
-
       </div>
     </section>
   );

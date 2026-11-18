@@ -1,284 +1,118 @@
 import React, { useState } from 'react';
-import { Phone, Menu, X, Lock, Image as ImageIcon, Shield, Mail } from 'lucide-react';
-import { CONTACT_INFO } from '../data/servicesData';
-import { WealthnestLogo } from './WealthnestLogo';
+import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
-  onOpenBooking: () => void;
-  onOpenClientPortal: () => void;
-  onNavigateToSection?: (sectionId: string) => void;
-  onOpenBrandKit?: () => void;
+  onOpenBooking: (topic?: string) => void;
+  onNavigateToSection: (sectionId: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenBooking,
-  onOpenClientPortal,
   onNavigateToSection,
-  onOpenBrandKit,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
+  const navItems = [
+    { label: 'Services', id: 'services' },
+    { label: 'About', id: 'about' },
+    { label: 'Certifications', id: 'certifications' },
+    { label: 'FAQ', id: 'faq' },
+    { label: 'Contact', id: 'contact' },
+  ];
+
+  const handleNavClick = (sectionId: string) => {
     setMobileMenuOpen(false);
-    if (onNavigateToSection) {
-      onNavigateToSection(id);
-    } else {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
+    onNavigateToSection(sectionId);
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/98 backdrop-blur-md border-b border-slate-200 shadow-2xs transition-all">
-      {/* Top micro-bar: Trust signals & direct phone */}
-      <div className="hidden md:block bg-[#0C231C] text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-emerald-950">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4 text-emerald-100/90">
-            <span className="flex items-center gap-1.5">
-              <Shield className="w-3 h-3 text-amber-400" />
-              <span>Strategic Accounting, Tax & Advisory Practice • Jersey City, NJ & Nationwide (50 States)</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-5">
-            <a
-              href={`tel:${CONTACT_INFO.phone}`}
-              className="hover:text-amber-300 transition-colors flex items-center gap-1.5 font-medium text-white"
-            >
-              <Phone className="w-3 h-3 text-amber-400" />
-              <span>Direct: {CONTACT_INFO.phoneDisplay}</span>
-            </a>
-            <a
-              href={`mailto:${CONTACT_INFO.email}`}
-              className="hover:text-amber-300 transition-colors flex items-center gap-1.5"
-            >
-              <Mail className="w-3 h-3 text-emerald-400" />
-              <span>{CONTACT_INFO.email}</span>
-            </a>
-          </div>
-        </div>
-      </div>
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+      <div className="max-w-6xl mx-auto px-6 h-16 sm:h-20 flex items-center justify-between gap-8">
+        {/* Zone 1: Brand Wordmark (single-line) */}
+        <a
+          href="#top"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setMobileMenuOpen(false);
+          }}
+          className="flex items-center gap-3 text-slate-900 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3F35] rounded"
+        >
+          <img
+            src="/wealthnest-logo-600.jpg"
+            alt="Wealthnest Advisory LLC"
+            className="w-8 h-8 rounded object-cover border border-slate-200 shrink-0"
+            referrerPolicy="no-referrer"
+          />
+          <span className="text-lg sm:text-xl font-bold tracking-tight font-serif text-slate-900 whitespace-nowrap">
+            Wealthnest Advisory
+          </span>
+        </a>
 
-      {/* Main navigation header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          
-          {/* Brand Logo & Name */}
-          <a
-            href="/"
-            className="flex items-center transition-opacity hover:opacity-95"
-            aria-label="Wealthnest Advisory LLC Home"
+        {/* Zone 2: Clean Single-Line Navigation Links */}
+        <nav
+          aria-label="Primary Navigation"
+          className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600"
+        >
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleNavClick(item.id)}
+              className="py-1 text-slate-600 hover:text-slate-900 border-b-2 border-transparent hover:border-[#1E3F35] transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3F35] rounded-xs"
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Zone 3: Single Primary Action */}
+        <div className="hidden md:flex items-center shrink-0">
+          <button
+            type="button"
+            onClick={() => onOpenBooking()}
+            className="px-5 py-2.5 text-sm font-semibold text-white bg-[#1E3F35] hover:bg-[#152E27] rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1E3F35]"
           >
-            <WealthnestLogo variant="nav" />
-          </a>
-
-          {/* Clean text navigation links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-700">
-            <a
-              href="#about"
-              onClick={(e) => handleNavClick(e, 'about')}
-              className="hover:text-[#1E3F35] transition-colors"
-            >
-              About
-            </a>
-            <a
-              href="#services"
-              onClick={(e) => handleNavClick(e, 'services')}
-              className="hover:text-[#1E3F35] transition-colors"
-            >
-              Services
-            </a>
-            <a
-              href="#certifications"
-              onClick={(e) => handleNavClick(e, 'certifications')}
-              className="hover:text-[#1E3F35] transition-colors flex items-center gap-1"
-            >
-              <span>QuickBooks</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            </a>
-            <a
-              href="#specializations"
-              onClick={(e) => handleNavClick(e, 'specializations')}
-              className="hover:text-[#1E3F35] transition-colors"
-            >
-              Specializations
-            </a>
-            <a
-              href="#industries"
-              onClick={(e) => handleNavClick(e, 'industries')}
-              className="hover:text-[#1E3F35] transition-colors"
-            >
-              Industries
-            </a>
-            <a
-              href="#tools"
-              onClick={(e) => handleNavClick(e, 'tools')}
-              className="hover:text-[#1E3F35] transition-colors font-medium text-emerald-800"
-            >
-              IRS Tools
-            </a>
-            <a
-              href="#faq"
-              onClick={(e) => handleNavClick(e, 'faq')}
-              className="hover:text-[#1E3F35] transition-colors"
-            >
-              FAQ
-            </a>
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, 'contact')}
-              className="hover:text-[#1E3F35] transition-colors"
-            >
-              Contact
-            </a>
-          </nav>
-
-          {/* Action cluster: Client Portal & Schedule Consultation */}
-          <div className="hidden sm:flex items-center gap-3">
-            {/* Secure Client Portal Button */}
-            <button
-              onClick={onOpenClientPortal}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-300 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
-              aria-label="Access Encrypted Client Portal"
-            >
-              <Lock className="w-3.5 h-3.5 text-[#1E3F35]" />
-              <span>Client Portal</span>
-            </button>
-
-            {/* Schedule Consultation Call Button */}
-            <button
-              onClick={onOpenBooking}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#1E3F35] hover:bg-[#152E27] active:scale-98 rounded-lg transition-all shadow-sm cursor-pointer whitespace-nowrap"
-            >
-              <Phone className="w-3.5 h-3.5 text-amber-300" />
-              <span>Schedule Consultation</span>
-            </button>
-          </div>
-
-          {/* Mobile hamburger menu */}
-          <div className="flex lg:hidden items-center gap-2">
-            <button
-              onClick={onOpenClientPortal}
-              className="p-2 text-slate-700 bg-slate-100 rounded-lg border border-slate-200"
-              aria-label="Open Client Portal"
-              title="Client Portal"
-            >
-              <Lock className="w-4 h-4 text-[#1E3F35]" />
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
+            Schedule Consultation
+          </button>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 text-slate-700 hover:text-slate-900 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3F35]"
+          aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </div>
 
-      {/* Mobile menu dropdown */}
+      {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-b border-slate-200 bg-white px-5 pt-3 pb-6 space-y-3 shadow-lg">
-          <nav className="flex flex-col space-y-2 text-sm font-medium text-slate-700">
-            <a
-              href="#about"
-              onClick={(e) => handleNavClick(e, 'about')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              About Firm
-            </a>
-            <a
-              href="#services"
-              onClick={(e) => handleNavClick(e, 'services')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              Services & Accounting
-            </a>
-            <a
-              href="#certifications"
-              onClick={(e) => handleNavClick(e, 'certifications')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35] font-semibold text-emerald-800"
-            >
-              QuickBooks ProAdvisor Badges
-            </a>
-            <a
-              href="#specializations"
-              onClick={(e) => handleNavClick(e, 'specializations')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              Cross-Border & Specializations
-            </a>
-            <a
-              href="#industries"
-              onClick={(e) => handleNavClick(e, 'industries')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              Industries We Serve
-            </a>
-            <a
-              href="#tools"
-              onClick={(e) => handleNavClick(e, 'tools')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              IRS Tools & Links
-            </a>
-            <a
-              href="#faq"
-              onClick={(e) => handleNavClick(e, 'faq')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              Frequently Asked Questions
-            </a>
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, 'contact')}
-              className="px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#1E3F35]"
-            >
-              Contact Us
-            </a>
-            {onOpenBrandKit && (
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenBrandKit();
-                }}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50 text-left flex items-center gap-2 text-slate-600 cursor-pointer"
-              >
-                <ImageIcon className="w-4 h-4 text-amber-600" />
-                <span>Official Brand Logo Kit (.JPG)</span>
-              </button>
-            )}
-          </nav>
-
-          <div className="pt-3 border-t border-slate-200 flex flex-col gap-2.5">
+        <div className="md:hidden bg-white border-t border-slate-200 px-6 py-4 space-y-2">
+          {navItems.map((item) => (
             <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenClientPortal();
-              }}
-              className="w-full py-2.5 px-4 text-center font-bold text-xs text-slate-800 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center gap-2"
+              key={item.id}
+              type="button"
+              onClick={() => handleNavClick(item.id)}
+              className="block w-full text-left py-2.5 text-base font-medium text-slate-700 hover:text-[#1E3F35] border-b border-slate-100 last:border-b-0"
             >
-              <Lock className="w-4 h-4 text-[#1E3F35]" />
-              <span>Access Encrypted Client Portal</span>
+              {item.label}
             </button>
+          ))}
+          <div className="pt-3">
             <button
+              type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenBooking();
               }}
-              className="w-full py-2.5 px-4 text-center font-bold text-xs text-white bg-[#1E3F35] hover:bg-[#152E27] rounded-lg flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 text-sm font-semibold text-white bg-[#1E3F35] hover:bg-[#152E27] rounded-md transition-colors"
             >
-              <Phone className="w-3.5 h-3.5 text-amber-300" />
-              <span>Schedule Free Consultation</span>
+              Schedule Consultation
             </button>
-            <a
-              href={`tel:${CONTACT_INFO.phone}`}
-              className="w-full py-2 px-4 text-center font-medium text-xs text-slate-700 bg-slate-50 rounded-lg border border-slate-200 block"
-            >
-              Direct Office Line: {CONTACT_INFO.phoneDisplay}
-            </a>
           </div>
         </div>
       )}

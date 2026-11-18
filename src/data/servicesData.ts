@@ -8,8 +8,8 @@ export const CONTACT_INFO = {
   whatsappUrl: 'https://wa.me/12016162843',
   email: 'wealthnestadvisoryllc@gmail.com',
   hours: 'Mon – Fri: 8:00 AM – 7:00 PM EST | Sat: 9:00 AM – 3:00 PM EST',
-  location: 'Jersey City, New Jersey • Serving Clients Nationwide Across All 50 States',
-  addressDisplay: 'Jersey City, NJ • Nationwide Virtual Advisory Practice',
+  location: 'New Jersey • Serving Clients Nationwide Across All 50 States',
+  addressDisplay: 'New Jersey • Nationwide Virtual Advisory Practice',
 };
 
 export const ADVISORY_STATS = [
